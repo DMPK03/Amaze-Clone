@@ -9,8 +9,7 @@ namespace DM
     public class Level : ScriptableObject
     {
         public int LevelIndex;
-        public List<SavedTile> GroundTiles;
-        public List<SavedTile> WallTiles;
+        public List<SavedTile> GroundTiles;        
     }
 
     
@@ -19,5 +18,12 @@ namespace DM
     {
         public Vector3Int Position;
         public Tile Tile;
+    }
+
+    [Serializable]
+    public class Colors
+    {
+        public Color BallColor;
+        public Color TileColor;
     }
 }

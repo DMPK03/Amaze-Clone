@@ -8,26 +8,32 @@ namespace DM
 {
     public class LevelManager : MonoBehaviour
     {
-        [SerializeField] private Tilemap _groundTilemap, _wallTilemap;
+        [SerializeField] private Tilemap _groundTilemap;
         [SerializeField] private int _levelIndex;
 
+        [SerializeField] Colors[] ColorArray;
+        [SerializeField] SpriteRenderer _ballSprite;
+        [SerializeField] Tile _coloredTile;
+
         public delegate void V3E(Vector3 value);
-        public static event V3E OnMapLoadedEvent;
+        public static event V3E OnLevelLoadedEvent;
 
         public void LoadNewLevel()
         {
+            //check for adds here, if no adds ready load next level
+
             _levelIndex +=1;
+            GetRandomColors();
             LoadTilemap();
         }
 
 
-        public void SaveTilemap()
+        public void SaveTilemap()   //editor only
         {
             var newLevel = ScriptableObject.CreateInstance<Level>();
             newLevel.LevelIndex = _levelIndex;
             newLevel.name = $"Level {_levelIndex}";
             newLevel.GroundTiles = GetTilesFromMap(_groundTilemap);
-            newLevel.WallTiles = GetTilesFromMap(_wallTilemap);
 
             EditorStuff.SaveLevelFile(newLevel);
         }
@@ -50,9 +56,8 @@ namespace DM
         public void ClearTilemap()
         {
             _groundTilemap.ClearAllTiles();
-            _wallTilemap.ClearAllTiles();
-
         }
+        
         public void LoadTilemap()
         {
             Level level = Resources.Load<Level>($"Levels/Level {_levelIndex}");
@@ -60,20 +65,25 @@ namespace DM
                 Debug.Log($"Level {_levelIndex} does not exist, loading default first level");
                 _levelIndex = 0;
                 level = Resources.Load<Level>($"Levels/Level {_levelIndex}");
-                if(level == null) Debug.LogError("no level 0 found");
+                if(level == null) Debug.LogError("no levels found");
             }
-            ClearTilemap();
 
+            ClearTilemap();
 
             foreach(SavedTile tile in level.GroundTiles)
             {
                 _groundTilemap.SetTile(tile.Position, tile.Tile);
             }
-            foreach(SavedTile tile in level.WallTiles)
-            {
-                _wallTilemap.SetTile(tile.Position, tile.Tile);
+            OnLevelLoadedEvent?.Invoke(level.GroundTiles[0].Position);
+        }
+
+        private void GetRandomColors()
+        {
+            int x = UnityEngine.Random.Range(0, ColorArray.Length);
+            if(ColorArray[x] != null){
+                _ballSprite.color = ColorArray[x].BallColor;
+                _coloredTile.color = ColorArray[x].TileColor;
             }
-            OnMapLoadedEvent?.Invoke(level.GroundTiles[0].Position);
         }
     }
 
