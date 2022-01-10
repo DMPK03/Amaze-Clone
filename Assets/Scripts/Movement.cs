@@ -42,17 +42,17 @@ namespace DM
 
         private void GetMovementDirection() //todo better way to detect swipe, works for testing
         {
-            Touch touch = Input.GetTouch(0);
-            if (Vector2.SqrMagnitude(touch.deltaPosition) > 55)
+            Vector2 touch = Input.GetTouch(0).deltaPosition;
+            if (Vector2.SqrMagnitude(touch) > 100)
             {
-                if (Mathf.Abs(touch.deltaPosition.x) > Mathf.Abs(touch.deltaPosition.y))
+                if (Mathf.Abs(touch.x) > Mathf.Abs(touch.y))
                 {
-                    float inputX = touch.deltaPosition.x / Mathf.Abs(touch.deltaPosition.x);
+                    float inputX = touch.x / Mathf.Abs(touch.x);
                     StartCoroutine(Move(new Vector3(inputX, 0, 0), 0));
                 }
                 else
                 {
-                    float inputY = touch.deltaPosition.y / Mathf.Abs(touch.deltaPosition.y);
+                    float inputY = touch.y / Mathf.Abs(touch.y);
                     StartCoroutine(Move(new Vector3(0, inputY, 0), 1));
                 }
             }
