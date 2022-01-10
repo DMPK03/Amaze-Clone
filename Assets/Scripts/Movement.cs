@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using UnityEngine.InputSystem;
 
 namespace DM
 {
@@ -11,10 +10,8 @@ namespace DM
     {
         [SerializeField] Tilemap _groundTilemap;
         [SerializeField] Tile _originalTile, _coloredTile;
-        [SerializeField] LevelManager _levelManager;        
-        
+        [SerializeField] LevelManager _levelManager;
         [SerializeField] ParticleSystem _particle;
-        Controls _controls;
         Animator _animator;
         
         float _moveSpeed = 20f;
@@ -23,41 +20,42 @@ namespace DM
 
         int _movingHash, _directionHash;
 
-        private void Awake() {
-            _controls = new Controls();
-        }
-
         private void Start() {
             _animator = GetComponent<Animator>();
             _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);   // set begining tile color, could also be done while creating the tilemap
-            _movingHash = Animator.StringToHash("moving"); //for performance
+            _movingHash = Animator.StringToHash("moving");
             _directionHash = Animator.StringToHash("direction");
         }
 
         private void OnEnable() {
-            _controls.Gameplay.Enable();
-            _controls.Gameplay.Vertical.performed += OnMoveInputVertical;
-            _controls.Gameplay.Horizontal.performed += OnMoveInputHorizontal;
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
         }
 
         private void OnDisable() {
-            _controls.Gameplay.Disable();
-            _controls.Gameplay.Vertical.performed -= OnMoveInputVertical;
-            _controls.Gameplay.Horizontal.performed -= OnMoveInputHorizontal;
             LevelManager.OnLevelLoadedEvent -= OnNewLevelLoadedEvent;
         }
 
-        private void OnMoveInputVertical(InputAction.CallbackContext context)
+        private void Update()
         {
-            Vector2 _verticalInput = new Vector2 (0, context.ReadValue<float>());
-            if(!_isMoving) StartCoroutine(Move((Vector3)_verticalInput, 1));
+            if(!_isMoving && Input.touchCount > 0) GetMovementDirection();
         }
 
-        private void OnMoveInputHorizontal(InputAction.CallbackContext context)
+        private void GetMovementDirection() //todo better way to detect swipe, works for testing
         {
-            Vector2 _horizontalInput = new Vector2 (context.ReadValue<float>(), 0);
-            if(!_isMoving) StartCoroutine(Move((Vector3)_horizontalInput, 0));
+            Touch touch = Input.GetTouch(0);
+            if (Vector2.SqrMagnitude(touch.deltaPosition) > 55)
+            {
+                if (Mathf.Abs(touch.deltaPosition.x) > Mathf.Abs(touch.deltaPosition.y))
+                {
+                    float inputX = touch.deltaPosition.x / Mathf.Abs(touch.deltaPosition.x);
+                    StartCoroutine(Move(new Vector3(inputX, 0, 0), 0));
+                }
+                else
+                {
+                    float inputY = touch.deltaPosition.y / Mathf.Abs(touch.deltaPosition.y);
+                    StartCoroutine(Move(new Vector3(0, inputY, 0), 1));
+                }
+            }
         }
 
         private bool CanMove(Vector3Int location)
@@ -70,6 +68,7 @@ namespace DM
             while(CanMove(_groundTilemap.WorldToCell(transform.position + inputDirection * (_tilesToMove + 1))))
             {
                 _tilesToMove+=1;
+                if(_tilesToMove > 20) break;
             }    
             return transform.position + inputDirection * _tilesToMove;
         }

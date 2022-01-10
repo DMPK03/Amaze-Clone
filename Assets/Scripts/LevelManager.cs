@@ -35,7 +35,7 @@ namespace DM
             newLevel.name = $"Level {_levelIndex}";
             newLevel.GroundTiles = GetTilesFromMap(_groundTilemap);
 
-            EditorStuff.SaveLevelFile(newLevel);
+            //EditorStuff.SaveLevelFile(newLevel);
         }
 
         private List<SavedTile> GetTilesFromMap(Tilemap map)
