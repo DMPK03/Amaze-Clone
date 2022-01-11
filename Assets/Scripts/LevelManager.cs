@@ -8,6 +8,11 @@ namespace DM
 {
     public class LevelManager : MonoBehaviour
     {
+        public delegate void V3E(Vector3 value);
+        public static event V3E OnLevelLoadedEvent;
+        
+        public static LevelManager Instance;
+        
         [SerializeField] private Tilemap _groundTilemap;
         [SerializeField] private int _levelIndex;
 
@@ -15,8 +20,10 @@ namespace DM
         [SerializeField] SpriteRenderer _ballSprite;
         [SerializeField] Tile _coloredTile;
 
-        public delegate void V3E(Vector3 value);
-        public static event V3E OnLevelLoadedEvent;
+
+        private void Start() {
+            Instance = this;
+        }
 
         public void LoadNewLevel()
         {
