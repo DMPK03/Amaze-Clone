@@ -8,7 +8,7 @@ namespace DM
 {
     public class LevelManager : MonoBehaviour
     {
-        public delegate void V3E(Vector3 value);
+        public delegate void V3E(Level value);
         public static event V3E OnLevelLoadedEvent;
         
         public static LevelManager Instance;
@@ -81,7 +81,7 @@ namespace DM
             {
                 _groundTilemap.SetTile(tile.Position, tile.Tile);
             }
-            OnLevelLoadedEvent?.Invoke(level.GroundTiles[0].Position);
+            OnLevelLoadedEvent?.Invoke(level);
         }
 
         private void GetRandomColors()

@@ -16,7 +16,7 @@ namespace DM
         
         float _moveSpeed = 20f;
         int _tilesToMove = 1;
-        bool _isMoving;
+        bool _isMoving, _vibrate;
 
         int _movingHash, _directionHash;
 
@@ -29,6 +29,8 @@ namespace DM
 
         private void OnEnable() {
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
+            UI.OnTgUiMode += OnUIMode;
+            UI.OnTgVibrate += OnVibrate;
         }
 
         private void OnDisable() {
@@ -92,6 +94,7 @@ namespace DM
                 }
 
                 _isMoving = false;
+                if(_vibrate) Handheld.Vibrate();
                 _animator.SetBool(_movingHash, _isMoving);
 
                 if (!_groundTilemap.ContainsTile(_originalTile)) _levelManager.LoadNewLevel();   //todo  transform into levelEnd Event!
@@ -106,13 +109,22 @@ namespace DM
             _particle.Play();
         }
 
-        private void OnNewLevelLoadedEvent(Vector3 value)
+        private void OnNewLevelLoadedEvent(Level level)
         {
-            Vector3 newPos = new Vector3(value.x + .5f, value.y + .5f, 0);
+            Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             transform.position = newPos;
-            _groundTilemap.SetTile(_groundTilemap.WorldToCell(value), _coloredTile);
+            _groundTilemap.SetTile(_groundTilemap.WorldToCell(level.GroundTiles[0].Position), _coloredTile);
         }
 
+        private void OnUIMode(bool value)
+        {
+            _isMoving = value;
+        }
+
+        private void OnVibrate(bool value)
+        {
+            _vibrate = value;
+        }
         
     }
 }
