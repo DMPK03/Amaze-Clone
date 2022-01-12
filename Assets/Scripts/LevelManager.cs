@@ -23,6 +23,7 @@ namespace DM
 
         private void Start() {
             Instance = this;
+            UI.OnBallSelected += OnNewBall;
         }
 
         public void LoadNewLevel()
@@ -87,10 +88,12 @@ namespace DM
         private void GetRandomColors()
         {
             int x = UnityEngine.Random.Range(0, ColorArray.Length);
-            if(ColorArray[x] != null){
-                _ballSprite.color = ColorArray[x].BallColor;
-                _coloredTile.color = ColorArray[x].TileColor;
-            }
+            if(ColorArray[x] != null) _coloredTile.color = ColorArray[x].TileColor;
+        }
+
+        private void OnNewBall(Sprite ballSprite)
+        {
+            _ballSprite.sprite = ballSprite;
         }
     }
 

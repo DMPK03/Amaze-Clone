@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
 namespace DM
 {
@@ -10,9 +11,12 @@ namespace DM
     public class UI : MonoBehaviour
     {
         public delegate void UiToggle(bool value);
+        public delegate void BallSprite(Sprite sprite);
 
         public static event UiToggle OnTgUiMode, OnTgVibrate;
-        [SerializeField] GameObject _settingsTab;
+        public static event BallSprite OnBallSelected;
+
+        [SerializeField] GameObject _settingsTab, _privacyTab;
         [SerializeField] TextMeshProUGUI _levelText;
 
         private Camera _camera;
@@ -26,21 +30,14 @@ namespace DM
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
         }
 
-        public void OnSettingsOpen()
+        public void OpenUiElement()
         {
             OnTgUiMode?.Invoke(true);
-            _settingsTab.SetActive(true);
         }
 
-        public void OnSettingsClose()
+        public void CloseUiElement()
         {
-            _settingsTab.SetActive(false);
             OnTgUiMode?.Invoke(false);
-        }
-
-        public void OnSoundToggle(bool toggle)
-        {
-            Debug.Log($"sound is {toggle}");
         }
 
         public void OnVibrateToggle(bool vibrate)
@@ -57,5 +54,12 @@ namespace DM
         {
             _levelText.text = level.name.ToUpper();
         }
+        
+        public void ChangeBall()
+        {
+            Sprite sprite = EventSystem.current.currentSelectedGameObject.GetComponent<Image>().sprite;
+            if(sprite != null) OnBallSelected?.Invoke(sprite);
+        }
+
     }
 }
