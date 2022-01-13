@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 namespace DM
 {
     
-    public class UI : MonoBehaviour
+    public class UiManager : MonoBehaviour
     {
         public delegate void UiToggle(bool value);
         public delegate void BallSprite(Sprite sprite);
@@ -16,8 +16,8 @@ namespace DM
         public static event UiToggle OnTgUiMode, OnTgVibrate;
         public static event BallSprite OnBallSelected;
 
-        [SerializeField] GameObject _settingsTab, _privacyTab, _ballsGO;
-        [SerializeField] TextMeshProUGUI _levelText;
+        [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO;
+        [SerializeField] TextMeshProUGUI _levelText, _movesText;
         [SerializeField] Sprite[] _sprites;
 
         private Camera _camera;
@@ -59,7 +59,30 @@ namespace DM
         {
             _levelText.text = level.name.ToUpper();
             if(level.LevelIndex > _levelsCompleted) _levelsCompleted = level.LevelIndex;
-            RefreshOwnedBalls(); 
+            RefreshOwnedBalls();
+
+            switch (level.Type)
+            {
+                case Level.LevelType.Challenge:
+                _limitedTrunsGO.SetActive(false);
+                _timeTrialsGO.SetActive(false);
+                break;
+
+                case Level.LevelType.LimitedTurn:
+                _limitedTrunsGO.SetActive(true);
+                _timeTrialsGO.SetActive(false);
+                break;
+
+                case Level.LevelType.TimeTrial:
+                _limitedTrunsGO.SetActive(false);
+                _timeTrialsGO.SetActive(true);
+                break;
+
+                default:
+                _limitedTrunsGO.SetActive(false);
+                _timeTrialsGO.SetActive(false);
+                break;
+            }
         }
         
         public void ChangeBall()
@@ -81,9 +104,11 @@ namespace DM
             }
         }
 
+
+
         public void ChangeGameMode(int type)
         {
-            GameManager.Instance.LoadNewLevel(type);
+            GameManager.Instance.LoadNewLevel((Level.LevelType)type);
             CloseUiElement();
         }
     }

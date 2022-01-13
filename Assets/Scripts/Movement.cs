@@ -8,8 +8,9 @@ namespace DM
 
     public class Movement : MonoBehaviour
     {
-        public delegate void ENDLEVEL();
-        public static event ENDLEVEL OnLevelClearedEvent;
+        public delegate void MOVEMENT();
+        public static event MOVEMENT OnLevelClearedEvent;
+        public static event MOVEMENT OnMoveEvent;
         
         [SerializeField] Tilemap _groundTilemap;
         [SerializeField] Tile _originalTile, _coloredTile;
@@ -31,8 +32,8 @@ namespace DM
 
         private void OnEnable() {
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
-            UI.OnTgUiMode += OnUIMode;
-            UI.OnTgVibrate += OnVibrate;
+            UiManager.OnTgUiMode += OnUIMode;
+            UiManager.OnTgVibrate += OnVibrate;
         }
 
         private void OnDisable() {
@@ -95,9 +96,10 @@ namespace DM
                     yield return null;
                 }
 
+                OnMoveEvent?.Invoke();
                 if(_vibrate) Handheld.Vibrate();
 
-                if (!_groundTilemap.ContainsTile(_originalTile)) OnLevelClearedEvent?.Invoke();   //todo  transform into levelEnd Event!
+                if (!_groundTilemap.ContainsTile(_originalTile)) OnLevelClearedEvent?.Invoke();  
                 else {
                     _isMoving = false;
                     _animator.SetBool(_movingHash, _isMoving);
@@ -117,7 +119,6 @@ namespace DM
         {
             Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             transform.position = newPos;
-            _groundTilemap.SetTile(_groundTilemap.WorldToCell(level.GroundTiles[0].Position), _coloredTile);
             _isMoving = false;
             _animator.SetBool(_movingHash, _isMoving);
         }

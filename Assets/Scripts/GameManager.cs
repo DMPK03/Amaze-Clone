@@ -12,42 +12,46 @@ namespace DM
         [SerializeField] LevelManager _levelManager;
         [SerializeField] SpriteRenderer _ballSprite;
 
-        private int _currentLevelIndex;
-        private Level _currentLevel;
+        private Level _levelLoaded,_LevelCleared;
 
         private void OnEnable() {
             Movement.OnLevelClearedEvent += OnLevelCleared;
             LevelManager.OnLevelLoadedEvent += OnLevelLoaded;
+            UiManager.OnBallSelected += OnNewBall;
         }
         
         void Start()
         {
             Instance = this;
-            UI.OnBallSelected += OnNewBall;
+            LoadNewLevel(Level.LevelType.Level);
         }
 
-        public void LoadNewLevel(int type)
+        public void LoadNewLevel(Level.LevelType type)
         {
-            Level.LevelType levelType = (Level.LevelType)type;
             int lastLevelOfThisType = 0;    //get this from saved progress
-            _levelManager.LoadTilemap(levelType, lastLevelOfThisType);
+          
+            
+            _levelManager.LoadTilemap(type, lastLevelOfThisType + 1);
         }
 
         private void LoadNextLevel()
         {
-            _levelManager.LoadTilemap(_currentLevel.Type, _currentLevelIndex +1);
+            Debug.Log(_LevelCleared);
+            _levelManager.LoadTilemap(_LevelCleared.Type, _LevelCleared.LevelIndex +1);
         }
 
         private void OnLevelCleared()
         {
             //check for adds here, if no adds ready load next level
+            _LevelCleared = _levelLoaded;
+            
             LoadNextLevel();
         }
 
         private void OnLevelLoaded(Level level)
         {
-            _currentLevel = level;
-            _currentLevelIndex = level.LevelIndex;
+            _levelLoaded = level;
+            
         }
         
 
