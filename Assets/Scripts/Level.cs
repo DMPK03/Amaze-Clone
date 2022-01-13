@@ -8,8 +8,18 @@ namespace DM
 {
     public class Level : ScriptableObject
     {
+
         public int LevelIndex;
         public List<SavedTile> GroundTiles;        
+        public LevelType Type;
+        
+        public enum LevelType 
+        {
+            Level = 0,
+            Challenge = 1,
+            LimitedTurn = 2,
+            TimeTrial = 3
+        }
     }
 
     

@@ -8,6 +8,9 @@ namespace DM
 
     public class Movement : MonoBehaviour
     {
+        public delegate void ENDLEVEL();
+        public static event ENDLEVEL OnLevelClearedEvent;
+        
         [SerializeField] Tilemap _groundTilemap;
         [SerializeField] Tile _originalTile, _coloredTile;
         [SerializeField] LevelManager _levelManager;
@@ -22,7 +25,6 @@ namespace DM
 
         private void Start() {
             _animator = GetComponent<Animator>();
-            _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);   // set begining tile color, could also be done while creating the tilemap
             _movingHash = Animator.StringToHash("moving");
             _directionHash = Animator.StringToHash("direction");
         }
@@ -93,11 +95,13 @@ namespace DM
                     yield return null;
                 }
 
-                _isMoving = false;
                 if(_vibrate) Handheld.Vibrate();
-                _animator.SetBool(_movingHash, _isMoving);
 
-                if (!_groundTilemap.ContainsTile(_originalTile)) _levelManager.LoadNewLevel();   //todo  transform into levelEnd Event!
+                if (!_groundTilemap.ContainsTile(_originalTile)) OnLevelClearedEvent?.Invoke();   //todo  transform into levelEnd Event!
+                else {
+                    _isMoving = false;
+                    _animator.SetBool(_movingHash, _isMoving);
+                }
             }
         }
 
@@ -114,6 +118,8 @@ namespace DM
             Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             transform.position = newPos;
             _groundTilemap.SetTile(_groundTilemap.WorldToCell(level.GroundTiles[0].Position), _coloredTile);
+            _isMoving = false;
+            _animator.SetBool(_movingHash, _isMoving);
         }
 
         private void OnUIMode(bool value)

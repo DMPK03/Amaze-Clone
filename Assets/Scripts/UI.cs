@@ -16,18 +16,23 @@ namespace DM
         public static event UiToggle OnTgUiMode, OnTgVibrate;
         public static event BallSprite OnBallSelected;
 
-        [SerializeField] GameObject _settingsTab, _privacyTab;
+        [SerializeField] GameObject _settingsTab, _privacyTab, _ballsGO;
         [SerializeField] TextMeshProUGUI _levelText;
+        [SerializeField] Sprite[] _sprites;
 
         private Camera _camera;
         private Color _darkMode = new Color(.18F,.18F,.18F,1);
         private Color _lightMode = new Color(.78f,.78f,.78f,1);
 
+        private int _levelsCompleted = 0;
+        private Button[] _ballButtons;
 
 
         private void Start() {
             _camera = Camera.main;
+            _ballButtons = _ballsGO.GetComponentsInChildren<Button>(true);
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
+            RefreshOwnedBalls();
         }
 
         public void OpenUiElement()
@@ -53,6 +58,8 @@ namespace DM
         private void OnNewLevelLoadedEvent(Level level)
         {
             _levelText.text = level.name.ToUpper();
+            if(level.LevelIndex > _levelsCompleted) _levelsCompleted = level.LevelIndex;
+            RefreshOwnedBalls(); 
         }
         
         public void ChangeBall()
@@ -61,5 +68,23 @@ namespace DM
             if(sprite != null) OnBallSelected?.Invoke(sprite);
         }
 
+        private void RefreshOwnedBalls()
+        {
+            for (int i = 3; i < _ballButtons.Length - 1; i++)
+            {
+                if(_levelsCompleted > i+2)
+                {
+                    _ballButtons[i].interactable = true; // unlock new ball every 2 levels
+                    _ballButtons[i].image.sprite = _sprites[i-3];
+                }
+                else _ballButtons[i].interactable = false;
+            }
+        }
+
+        public void ChangeGameMode(int type)
+        {
+            GameManager.Instance.LoadNewLevel(type);
+            CloseUiElement();
+        }
     }
 }
