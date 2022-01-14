@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,9 +9,9 @@ namespace DM
 
     public class Movement : MonoBehaviour
     {
-        public delegate void MOVEMENT();
-        public static event MOVEMENT OnLevelClearedEvent;
-        public static event MOVEMENT OnMoveEvent;
+
+        public static event Action OnLevelClearedEvent, OnMoveEvent;
+        public static event Action<Vector3> OnMoveStartedEvent;
         
         [SerializeField] Tilemap _groundTilemap;
         [SerializeField] Tile _originalTile, _coloredTile;
@@ -20,7 +21,7 @@ namespace DM
         
         float _moveSpeed = 20f;
         int _tilesToMove = 1;
-        bool _isMoving, _vibrate;
+        bool _isMoving, _uiMode, _vibrate;
 
         int _movingHash, _directionHash;
 
@@ -33,7 +34,6 @@ namespace DM
         private void OnEnable() {
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
             UiManager.OnTgUiMode += OnUIMode;
-            UiManager.OnTgVibrate += OnVibrate;
         }
 
         private void OnDisable() {
@@ -42,7 +42,7 @@ namespace DM
 
         private void Update()
         {
-            if(!_isMoving && Input.touchCount > 0) GetMovementDirection();
+            if(!_isMoving && !_uiMode && Input.touchCount > 0) GetMovementDirection();
         }
 
         private void GetMovementDirection() //todo better way to detect swipe, works for testing
@@ -84,6 +84,7 @@ namespace DM
             {
                 _isMoving = true;
                 _tilesToMove = 1;
+                OnMoveStartedEvent?.Invoke(transform.position);
 
                 Vector3 newPosition = GetPosition(inputDirection);
                 StartAnimationsAndParticles(direction);
@@ -96,13 +97,11 @@ namespace DM
                     yield return null;
                 }
 
-                OnMoveEvent?.Invoke();
-                if(_vibrate) Handheld.Vibrate();
-
                 if (!_groundTilemap.ContainsTile(_originalTile)) OnLevelClearedEvent?.Invoke();  
                 else {
                     _isMoving = false;
                     _animator.SetBool(_movingHash, _isMoving);
+                    OnMoveEvent?.Invoke();
                 }
             }
         }
@@ -125,12 +124,7 @@ namespace DM
 
         private void OnUIMode(bool value)
         {
-            _isMoving = value;
-        }
-
-        private void OnVibrate(bool value)
-        {
-            _vibrate = value;
+            _uiMode = value;
         }
         
     }

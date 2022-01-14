@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,15 +9,14 @@ namespace DM
 {
     public class LevelManager : MonoBehaviour
     {
-        public delegate void LEVEL(Level value);
-        public static event LEVEL OnLevelLoadedEvent;
+        public static event Action<Level> OnLevelLoadedEvent;
         
         [SerializeField] private Tilemap _groundTilemap;
         [SerializeField] Tile _coloredTile;
         [SerializeField] Colors[] ColorArray;
 
         [SerializeField] private int _levelIndex;   //used in editor for saving/loading maps
-        [SerializeField] Level.LevelType _levelType;    //used in editor for saving/loading maps
+        [SerializeField] LevelType _levelType;    //used in editor for saving/loading maps
         
 
         public void SaveTilemap()   //editor only
@@ -27,7 +27,7 @@ namespace DM
             newLevel.name = $"Level {_levelIndex}";
             newLevel.GroundTiles = GetTilesFromMap(_groundTilemap);
 
-            EditorStuff.SaveLevelFile(newLevel);
+            //EditorStuff.SaveLevelFile(newLevel);
         }
 
         public void ClearTilemap()
@@ -35,7 +35,7 @@ namespace DM
             _groundTilemap.ClearAllTiles();
         }
         
-        public void LoadTilemap()   //used in editor
+        public void LoadTilemap()   //editor only
         {
             Level level = Resources.Load<Level>($"{_levelType}s/Level {_levelIndex}");
             if(level == null){
@@ -53,7 +53,7 @@ namespace DM
             }
         }
 
-        public void LoadTilemap(Level.LevelType type, int index)    //used in runtime
+        public void LoadTilemap(LevelType type, int index)
         {
             Level level = Resources.Load<Level>($"{type}s/Level {index}");
             if(level == null){
