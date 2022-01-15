@@ -40,8 +40,7 @@ namespace DM
             Level level = Resources.Load<Level>($"{_levelType}s/Level {_levelIndex}");
             if(level == null){
                 Debug.Log($"Level {_levelIndex} does not exist, loading default first level");
-                _levelIndex = 0;
-                level = Resources.Load<Level>($"{_levelType}s/Level {_levelIndex}");
+                level = Resources.Load<Level>($"{_levelType}s/Level {0}");
                 if(level == null) Debug.LogError("no levels found");
             }
 
@@ -56,12 +55,7 @@ namespace DM
         public void LoadTilemap(LevelType type, int index)
         {
             Level level = Resources.Load<Level>($"{type}s/Level {index}");
-            if(level == null){
-                Debug.Log($"Level {index} does not exist, loading default first level");
-                index = 0;
-                level = Resources.Load<Level>($"{type}s/Level {index}");
-                if(level == null) Debug.LogError("no levels found");
-            }
+            if(level == null) level = Resources.Load<Level>($"{type}s/Level {0}");
 
             ClearTilemap();
             GetRandomColors();

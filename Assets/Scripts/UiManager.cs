@@ -15,8 +15,12 @@ namespace DM
         public static event Action<Sprite> OnBallSelected;
 
         [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO;
+        [SerializeField] Transform _frame;
         [SerializeField] TextMeshProUGUI _levelText, _movesText, _timeText;
         [SerializeField] Sprite[] _sprites;
+
+        [SerializeField] Toggle[] _toggles;
+        string toggleString = "";
 
         public bool Vibrate{get; set;}
 
@@ -44,6 +48,8 @@ namespace DM
         private void Start() {
             _camera = Camera.main;
             _ballButtons = _ballsGO.GetComponentsInChildren<Button>(true);
+            LoadToggleState();
+            LoadLastBall();
         }
 #endregion
 #region public ui methods
@@ -59,7 +65,7 @@ namespace DM
 
         public void OnDarkmodeToggle(bool darkmode)
         {
-            _camera.backgroundColor = darkmode? _lightMode : _darkMode; 
+            _camera.backgroundColor = darkmode? _lightMode : _darkMode;
         }
 
         public void RestartLevel()
@@ -70,8 +76,10 @@ namespace DM
 
         public void ChangeBall()
         {
-            Sprite sprite = EventSystem.current.currentSelectedGameObject.GetComponent<Image>().sprite;
-            if(sprite != null) OnBallSelected?.Invoke(sprite);
+            EventSystem.current.currentSelectedGameObject.TryGetComponent<Image>(out Image image);
+            OnBallSelected?.Invoke(image.sprite);
+            _frame.position = image.transform.position;
+            PlayerPrefs.SetString("ball", image.gameObject.name);
         }
 
         public void ChangeGameMode(int type)
@@ -149,6 +157,23 @@ namespace DM
             }
         }
 
+        private void LoadLastBall()  //find a better way to do this
+        {
+            if(PlayerPrefs.HasKey("ball"))
+            {
+                string ball = PlayerPrefs.GetString("ball");
+                foreach (var button in _ballButtons)
+                {
+                    if(button.name == ball)
+                    {
+                        OnBallSelected?.Invoke(button.transform.GetComponent<Image>().sprite);
+                        _frame.position = button.transform.position;
+                        break;
+                    }
+                }
+            }    
+        }
+
         private IEnumerator Timer(float duration)
         {
             float finishedTime = Time.time + duration;
@@ -165,6 +190,31 @@ namespace DM
             _gameOverGO.SetActive(value);
             OnTgUiMode?.Invoke(value);
         }
+#endregion
+#region PlayerPrefs
+
+        public void SaveToggleState()
+        {
+            toggleString = "";
+            foreach (var toggle in _toggles)
+            {
+                toggleString += toggle.isOn? 't' : 'f';
+            }
+            PlayerPrefs.SetString("state", toggleString);
+        }
+
+        private void LoadToggleState()
+        {
+            if(PlayerPrefs.HasKey("state"))
+            {
+                toggleString = PlayerPrefs.GetString("state");
+                for (int i = 0; i < 3; i++)
+                {
+                    _toggles[i].isOn = toggleString[i] == 't';
+                }
+            }
+        }
+
 #endregion
     }
 }
