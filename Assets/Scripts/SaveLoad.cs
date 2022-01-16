@@ -38,7 +38,7 @@ namespace DM
                 string loadData = File.ReadAllText(path);
                 return JsonUtility.FromJson<SaveData>(loadData);
             }
-            else return new SaveData(levelType, 0);
+            else return new SaveData(levelType, 1);
         }
 
         public string LoadData(string name)

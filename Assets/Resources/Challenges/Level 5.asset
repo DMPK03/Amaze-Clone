@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: df8210eb3bba11c43b934191ebd10400, type: 3}
-  m_Name: Level 4
+  m_Name: Level 5
   m_EditorClassIdentifier: 
-  LevelIndex: 4
+  LevelIndex: 5
   AllowedMoves: 0
   GroundTiles:
   - Position: {x: -6, y: -4, z: 0}
@@ -47,4 +47,4 @@ MonoBehaviour:
     Tile: {fileID: 11400000, guid: ce05d1727ff185b4f8b7c0021d940e15, type: 2}
   - Position: {x: -4, y: 2, z: 0}
     Tile: {fileID: 11400000, guid: ce05d1727ff185b4f8b7c0021d940e15, type: 2}
-  Type: 0
+  Type: 1

@@ -27,7 +27,7 @@ namespace DM
             newLevel.name = $"Level {_levelIndex}";
             newLevel.GroundTiles = GetTilesFromMap(_groundTilemap);
 
-            EditorStuff.SaveLevelFile(newLevel);
+            //EditorStuff.SaveLevelFile(newLevel);
         }
 
         public void ClearTilemap()
@@ -55,7 +55,7 @@ namespace DM
         public void LoadTilemap(LevelType type, int index)
         {
             Level level = Resources.Load<Level>($"{type}s/Level {index}");
-            if(level == null) level = Resources.Load<Level>($"{type}s/Level {0}");
+            if(level == null) level = Resources.Load<Level>($"{type}s/Level {1}");
 
             ClearTilemap();
             GetRandomColors();

@@ -78,7 +78,7 @@ namespace DM
             GameOver(false);
         }
 
-        public void ChangeBall(int i)
+        public void ChangeBall(int i)   //find a better way to do this
         {
             if(_challengesCompleted[i] == 't')
             {
@@ -89,16 +89,16 @@ namespace DM
             }
             else
             {
-                GameManager.Instance.LoadNewLevel(LevelType.Challenge);
+                GameManager.Instance.LoadNewLevel(LevelType.Challenge, i);
                 _ballsGO.SetActive(false);
+                CloseUiElement();
             }
 
         }
 
         public void ChangeGameMode(int type)
         {
-            LevelType targetLevelType = (LevelType)type;
-            if(_currentLevel.Type != targetLevelType) GameManager.Instance.LoadNewLevel(targetLevelType);
+            if(_currentLevel.Type != (LevelType)type) GameManager.Instance.LoadNewLevel((LevelType)type);
             CloseUiElement();
             StopAllCoroutines();
         }
@@ -124,36 +124,22 @@ namespace DM
         private void RefreshUiTexts(Level level)
         {
             _movesRemaining = level.AllowedMoves;
+            _timeText.text = "20";  //set time for now, should get it from level 
             _levelText.text = level.name.ToUpper();
             _movesText.text = _movesRemaining.ToString();
-            _timeText.text = "20";
         }
 
         private void OnMoveEvent()
         {
             if(Vibrate) Handheld.Vibrate(); // placeholder untill custom vibrate
-            switch (_currentLevel.Type)
-            {
-                case LevelType.Level:
-                break;
-
-                case LevelType.Challenge:
-                break;
-
-                case LevelType.LimitedTurn:
-                    _movesRemaining --;
-                    _movesText.text = _movesRemaining.ToString();
-                    if(_movesRemaining == 0) GameOver(true);
-                break;
-
-                case LevelType.TimeTrial:
-                    if(_timerCorutine == null) _timerCorutine = StartCoroutine(Timer(20));  //todo get timelimit from saved level data, fixed time for now
-                break;
-                
-                default:
-                break;
-            }
             
+            if(_currentLevel.Type == LevelType.LimitedTurn)
+            {
+                _movesRemaining --;
+                _movesText.text = _movesRemaining.ToString();
+                if(_movesRemaining == 0) GameOver(true);
+            }
+            if(_currentLevel.Type == LevelType.TimeTrial && _timerCorutine == null) _timerCorutine = StartCoroutine(Timer(20));
         }
 #endregion
 #region private methods
@@ -163,21 +149,56 @@ namespace DM
             _challengesUnlocked =  SaveLoad.Instance.LoadData("Unlocked").ToCharArray();
             _challengesCompleted = SaveLoad.Instance.LoadData("Completed").ToCharArray();
 
-            for (int i = 3; i < _ballButtons.Length - 1; i++) _ballButtons[i].interactable = _challengesUnlocked[i-3] == 't';
+            for (int i = 0; i < _ballButtons.Length - 1; i++) 
+            {
+                if(_challengesUnlocked[i] == 't')
+                {
+                    _ballButtons[i].interactable = true;
+                    SetTexts(i, (_challengesCompleted[i] == 't')? "" : "PLAY CHALLENGE");
+                }
+                else _ballButtons[i].interactable = false;
+                _ballButtons[0].interactable = true;
+            }
+        }
+        
+        private void SetTexts(int i, string msg)
+        {
+            var text = _ballButtons[i].gameObject.GetComponentInChildren<TextMeshProUGUI>(true);
+            if(text != null) text.text = msg;
         }
 
         public void UpdateChallenges(Level level)
         {
-            Debug.Log(level);
-            /*if(GameManager.Instance.LevelCleared.Type == LevelType.Level)
+            Debug.Log($"{level.Type} {level.LevelIndex}");
+            if(level.Type == LevelType.Level && level.LevelIndex % 3 == 0)
             {
-                _challengesUnlocked[GameManager.Instance.LevelCleared.LevelIndex] = 't';
-                _ballButtons[GameManager.Instance.LevelCleared.LevelIndex].interactable = true;
-            }*/
-            //else if(GameManager.Instance.LevelCleared.Type == LevelType.Challenge) _challengesCompleted[GameManager.Instance.LevelCleared.LevelIndex] = 't';
+                int i = level.LevelIndex / 3;
+                _challengesUnlocked[i] = 't';
+                _ballButtons[i].interactable = true;
+                SetTexts(i,"PLAY CHALLENGE");
+            }
+            else if(level.Type == LevelType.Challenge)
+            {
+                _challengesCompleted[level.LevelIndex] = 't';
+                SetTexts(level.LevelIndex, "");
+            }            
         }
 
-        private void LoadLastBall()  //find a better way to do this
+        private void SaveGame()
+        {
+            SaveLoad.Instance.SaveData("Unlocked", new string(_challengesUnlocked));
+            SaveLoad.Instance.SaveData("Completed", new string(_challengesCompleted));
+        }
+
+        private void OnApplicationQuit() {
+            SaveGame();
+        }
+
+        private void OnApplicationFocus(bool focusStatus) {
+            if(!focusStatus) SaveGame();
+        }
+
+        private void LoadLastBall()
         {
             if(PlayerPrefs.HasKey("ball"))
             {
@@ -186,7 +207,7 @@ namespace DM
                 {
                     if(button.name == ball)
                     {
-                        OnBallSelected?.Invoke(button.transform.GetComponent<Image>().sprite);
+                        OnBallSelected?.Invoke(button.image.sprite);
                         _frame.position = button.transform.position;
                         break;
                     }
