@@ -15,7 +15,8 @@ namespace DM
         [SerializeField] SpriteRenderer _ballSprite;
         [SerializeField] TrailRenderer _trailRenderer;
 
-        private Level _levelLoaded,_LevelCleared;
+        public Level LevelCleared{ get; private set;}
+        private Level _levelLoaded;
 
         private void Awake() {
             Movement.OnLevelClearedEvent += OnLevelCleared;
@@ -43,14 +44,16 @@ namespace DM
 
         private void LoadNextLevel()
         {
-            _levelManager.LoadTilemap(_LevelCleared.Type, _LevelCleared.LevelIndex +1);
+            _levelManager.LoadTilemap(LevelCleared.Type, LevelCleared.LevelIndex +1);
         }
 
         private void OnLevelCleared()
         {
             //check for adds here, if no adds ready load next level
-            _LevelCleared = _levelLoaded;
+            LevelCleared = _levelLoaded;
+            _uiManager.UpdateChallenges(_levelLoaded);
             LoadNextLevel();
+
         }
 
         private void OnLevelLoaded(Level level)

@@ -118,6 +118,7 @@ namespace DM
         {
             Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             transform.position = newPos;
+            _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);
             _isMoving = false;
             _animator.SetBool(_movingHash, _isMoving);
         }

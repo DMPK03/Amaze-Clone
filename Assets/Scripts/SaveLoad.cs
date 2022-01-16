@@ -24,6 +24,12 @@ namespace DM
             File.WriteAllText(path, saveString);
         }
 
+        public void SaveData(string name, string data)
+        {
+            string path = Path.Combine(Application.persistentDataPath, $"{name}.json");
+            File.WriteAllText(path, data);
+        }
+
         public SaveData LoadData(LevelType levelType)
         {
             string path = Path.Combine(Application.persistentDataPath, $"{levelType}.json");
@@ -34,5 +40,17 @@ namespace DM
             }
             else return new SaveData(levelType, 0);
         }
+
+        public string LoadData(string name)
+        {
+            string path = Path.Combine(Application.persistentDataPath, $"{name}.json");
+            if(System.IO.File.Exists(path))
+            {
+                return  File.ReadAllText(path);
+            }
+            else return "tfffffffff";
+        }
+
+
     }
 }

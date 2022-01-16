@@ -8,7 +8,7 @@ namespace DM
     public class AudioManager : MonoBehaviour
     {
         [Space(20)]
-        [Header("Auto add audio to every button that is child of GO, so i dont have to do it manualy.")]
+        [Header("Auto add audio to every button that is child of GO")]
         
         [SerializeField] GameObject _go;
         [SerializeField] AudioSource _audioSource;

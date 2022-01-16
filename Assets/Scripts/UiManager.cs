@@ -14,13 +14,16 @@ namespace DM
         public static event Action<bool> OnTgUiMode;
         public static event Action<Sprite> OnBallSelected;
 
+        [SerializeField] CameraControll _cameraControll;
         [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO;
         [SerializeField] Transform _frame;
         [SerializeField] TextMeshProUGUI _levelText, _movesText, _timeText;
         [SerializeField] Sprite[] _sprites;
 
         [SerializeField] Toggle[] _toggles;
-        string toggleString = "";
+        private string _toggleString;
+        Char[] _challengesUnlocked, _challengesCompleted;
+
 
         public bool Vibrate{get; set;}
 
@@ -50,6 +53,7 @@ namespace DM
             _ballButtons = _ballsGO.GetComponentsInChildren<Button>(true);
             LoadToggleState();
             LoadLastBall();
+            LoadChallenges();
         }
 #endregion
 #region public ui methods
@@ -74,12 +78,21 @@ namespace DM
             GameOver(false);
         }
 
-        public void ChangeBall()
+        public void ChangeBall(int i)
         {
-            EventSystem.current.currentSelectedGameObject.TryGetComponent<Image>(out Image image);
-            OnBallSelected?.Invoke(image.sprite);
-            _frame.position = image.transform.position;
-            PlayerPrefs.SetString("ball", image.gameObject.name);
+            if(_challengesCompleted[i] == 't')
+            {
+                Image image = EventSystem.current.currentSelectedGameObject.GetComponent<Image>();
+                OnBallSelected?.Invoke(image.sprite);
+                _frame.position = image.transform.position;
+                PlayerPrefs.SetString("ball", image.gameObject.name);
+            }
+            else
+            {
+                GameManager.Instance.LoadNewLevel(LevelType.Challenge);
+                _ballsGO.SetActive(false);
+            }
+
         }
 
         public void ChangeGameMode(int type)
@@ -87,6 +100,7 @@ namespace DM
             LevelType targetLevelType = (LevelType)type;
             if(_currentLevel.Type != targetLevelType) GameManager.Instance.LoadNewLevel(targetLevelType);
             CloseUiElement();
+            StopAllCoroutines();
         }
 
 #endregion
@@ -97,6 +111,7 @@ namespace DM
             _currentLevel = level;
             _limitedTrunsGO.SetActive(level.Type == LevelType.LimitedTurn);
             _timeTrialsGO.SetActive(level.Type == LevelType.TimeTrial);
+            _cameraControll.enabled = (level.Type == LevelType.Challenge);
             RefreshUiTexts(level);
         }
 
@@ -112,13 +127,11 @@ namespace DM
             _levelText.text = level.name.ToUpper();
             _movesText.text = _movesRemaining.ToString();
             _timeText.text = "20";
-            RefreshOwnedBalls();
         }
 
         private void OnMoveEvent()
         {
             if(Vibrate) Handheld.Vibrate(); // placeholder untill custom vibrate
-            Debug.Log(Vibrate);
             switch (_currentLevel.Type)
             {
                 case LevelType.Level:
@@ -144,17 +157,24 @@ namespace DM
         }
 #endregion
 #region private methods
-        private void RefreshOwnedBalls()
+
+        private void LoadChallenges()
         {
-            for (int i = 3; i < _ballButtons.Length - 1; i++)
+            _challengesUnlocked =  SaveLoad.Instance.LoadData("Unlocked").ToCharArray();
+            _challengesCompleted = SaveLoad.Instance.LoadData("Completed").ToCharArray();
+
+            for (int i = 3; i < _ballButtons.Length - 1; i++) _ballButtons[i].interactable = _challengesUnlocked[i-3] == 't';
+        }
+
+        public void UpdateChallenges(Level level)
+        {
+            Debug.Log(level);
+            /*if(GameManager.Instance.LevelCleared.Type == LevelType.Level)
             {
-                if(_currentLevel.LevelIndex > i+2)
-                {
-                    _ballButtons[i].interactable = true; // unlock new ball every 2 levels
-                    _ballButtons[i].image.sprite = _sprites[i-3];
-                }
-                else _ballButtons[i].interactable = false;
-            }
+                _challengesUnlocked[GameManager.Instance.LevelCleared.LevelIndex] = 't';
+                _ballButtons[GameManager.Instance.LevelCleared.LevelIndex].interactable = true;
+            }*/
+            //else if(GameManager.Instance.LevelCleared.Type == LevelType.Challenge) _challengesCompleted[GameManager.Instance.LevelCleared.LevelIndex] = 't';
         }
 
         private void LoadLastBall()  //find a better way to do this
@@ -195,22 +215,22 @@ namespace DM
 
         public void SaveToggleState()
         {
-            toggleString = "";
+            _toggleString = "";
             foreach (var toggle in _toggles)
             {
-                toggleString += toggle.isOn? 't' : 'f';
+                _toggleString += toggle.isOn? 't' : 'f';
             }
-            PlayerPrefs.SetString("state", toggleString);
+            PlayerPrefs.SetString("state", _toggleString);
         }
 
         private void LoadToggleState()
         {
             if(PlayerPrefs.HasKey("state"))
             {
-                toggleString = PlayerPrefs.GetString("state");
+                _toggleString = PlayerPrefs.GetString("state");
                 for (int i = 0; i < 3; i++)
                 {
-                    _toggles[i].isOn = toggleString[i] == 't';
+                    _toggles[i].isOn = _toggleString[i] == 't';
                 }
             }
         }
