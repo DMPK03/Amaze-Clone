@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.EventSystems;
 
 namespace DM
 {
@@ -15,15 +13,15 @@ namespace DM
         public static event Action<Sprite> OnBallSelected;
 
         [SerializeField] CameraControll _cameraControll;
-        [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO;
+        [SerializeField] AudioSource _audioSource;
+        [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ltTextGo, _ttTextGo;
         [SerializeField] Transform _frame;
         [SerializeField] TextMeshProUGUI _levelText, _movesText, _timeText;
-        [SerializeField] Sprite[] _sprites;
+        [SerializeField] ParticleSystem _particle;
 
         [SerializeField] Toggle[] _toggles;
         private string _toggleString;
         Char[] _challengesUnlocked, _challengesCompleted;
-
 
         public bool Vibrate{get; set;}
 
@@ -82,7 +80,7 @@ namespace DM
         {
             if(_challengesCompleted[i] == 't')
             {
-                Image image = EventSystem.current.currentSelectedGameObject.GetComponent<Image>();
+                Image image = _ballButtons[i].image;
                 OnBallSelected?.Invoke(image.sprite);
                 _frame.position = image.transform.position;
                 PlayerPrefs.SetString("ball", image.gameObject.name);
@@ -100,7 +98,7 @@ namespace DM
         {
             if(_currentLevel.Type != (LevelType)type) GameManager.Instance.LoadNewLevel((LevelType)type);
             CloseUiElement();
-            StopAllCoroutines();
+            if(_timerCorutine != null) StopCoroutine(_timerCorutine); //in case level is changed while timer is runing
         }
 
 #endregion
@@ -108,6 +106,7 @@ namespace DM
 
         private void OnNewLevelLoadedEvent(Level level)
         {
+
             _currentLevel = level;
             _limitedTrunsGO.SetActive(level.Type == LevelType.LimitedTurn);
             _timeTrialsGO.SetActive(level.Type == LevelType.TimeTrial);
@@ -117,7 +116,8 @@ namespace DM
 
         private void OnLevelCleared()
         {
-            StopAllCoroutines();
+            _particle.Play();
+            if(_timerCorutine != null) StopCoroutine(_timerCorutine);
             _timerCorutine = null;
         }
 
@@ -132,7 +132,6 @@ namespace DM
         private void OnMoveEvent()
         {
             if(Vibrate) Handheld.Vibrate(); // placeholder untill custom vibrate
-            
             if(_currentLevel.Type == LevelType.LimitedTurn)
             {
                 _movesRemaining --;
@@ -169,7 +168,6 @@ namespace DM
 
         public void UpdateChallenges(Level level)
         {
-            Debug.Log($"{level.Type} {level.LevelIndex}");
             if(level.Type == LevelType.Level && level.LevelIndex % 3 == 0)
             {
                 int i = level.LevelIndex / 3;
@@ -181,6 +179,7 @@ namespace DM
             {
                 _challengesCompleted[level.LevelIndex] = 't';
                 SetTexts(level.LevelIndex, "");
+                ChangeBall(level.LevelIndex);
             }            
         }
 
@@ -218,10 +217,16 @@ namespace DM
         private IEnumerator Timer(float duration)
         {
             float finishedTime = Time.time + duration;
-            while (Time.time < finishedTime) {
+
+            while (Time.time < finishedTime)
+            {
                 _timeText.text = (finishedTime - Time.time).ToString("0");
-                yield return null;
+                if(finishedTime - Time.time < 4) _audioSource.Play();
+
+                yield return new WaitForSeconds(1f);
             }
+            _timeText.text = (finishedTime - Time.time).ToString("0");
+            _audioSource.Play();
             GameOver(true);
             _timerCorutine = null;
         }
@@ -230,7 +235,10 @@ namespace DM
         {
             _gameOverGO.SetActive(value);
             OnTgUiMode?.Invoke(value);
+            _ltTextGo.SetActive(_currentLevel.Type == LevelType.LimitedTurn);
+            _ttTextGo.SetActive(_currentLevel.Type == LevelType.TimeTrial);
         }
+
 #endregion
 #region PlayerPrefs
 

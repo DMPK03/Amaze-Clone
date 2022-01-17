@@ -17,6 +17,7 @@ namespace DM
         [SerializeField] Tile _originalTile, _coloredTile;
         [SerializeField] LevelManager _levelManager;
         [SerializeField] ParticleSystem _particle;
+        [SerializeField] Animation _gridAnimation;
         Animator _animator;
         
         float _moveSpeed = 20f;
@@ -73,14 +74,14 @@ namespace DM
             while(CanMove(_groundTilemap.WorldToCell(transform.position + inputDirection * (_tilesToMove + 1))))
             {
                 _tilesToMove+=1;
-                if(_tilesToMove > 20) break;
+                if(_tilesToMove > 30) break;    //remove after testing
             }    
             return transform.position + inputDirection * _tilesToMove;
         }
 
         private IEnumerator Move(Vector3 inputDirection, float direction)
         {
-            if(CanMove(_groundTilemap.WorldToCell(transform.position + inputDirection)))
+            if(CanMove(_groundTilemap.WorldToCell(transform.position + inputDirection)))    // todo move check before starting routine
             {
                 _isMoving = true;
                 _tilesToMove = 1;
@@ -97,12 +98,15 @@ namespace DM
                     yield return null;
                 }
 
-                if (!_groundTilemap.ContainsTile(_originalTile)) OnLevelClearedEvent?.Invoke();  
-                else {
-                    _isMoving = false;
-                    _animator.SetBool(_movingHash, _isMoving);
-                    OnMoveEvent?.Invoke();
+                if (!_groundTilemap.ContainsTile(_originalTile))
+                {
+                    OnLevelClearedEvent?.Invoke();  
+                    yield break;
                 }
+                OnMoveEvent?.Invoke();
+                yield return new WaitForSeconds(.1f);   // fake slam into wall delay
+                _isMoving = false;
+                _animator.SetBool(_movingHash, _isMoving);
             }
         }
 
@@ -114,13 +118,21 @@ namespace DM
             _particle.Play();
         }
 
-        private void OnNewLevelLoadedEvent(Level level)
+        private IEnumerator SetupLevel(Level level)
         {
+            yield return new WaitWhile(()=>_gridAnimation.isPlaying);
+            
             Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             transform.position = newPos;
+
             _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);
             _isMoving = false;
             _animator.SetBool(_movingHash, _isMoving);
+        }
+        private void OnNewLevelLoadedEvent(Level level)
+        {
+            _gridAnimation.Play();
+            StartCoroutine(SetupLevel(level));
         }
 
         private void OnUIMode(bool value)
