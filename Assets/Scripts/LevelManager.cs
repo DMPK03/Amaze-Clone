@@ -15,10 +15,11 @@ namespace DM
         [SerializeField] Tile _coloredTile;
         [SerializeField] Colors[] ColorArray;
 
+        [SerializeField] Camera _camera;    //used in editor for saving/loading maps
         [SerializeField] private int _levelIndex;   //used in editor for saving/loading maps
         [SerializeField] LevelType _levelType;    //used in editor for saving/loading maps
         
-
+#if UNITY_EDITOR
         public void SaveTilemap()   //editor only
         {
             var newLevel = ScriptableObject.CreateInstance<Level>();
@@ -26,14 +27,13 @@ namespace DM
             newLevel.Type = _levelType;
             newLevel.name = $"Level {_levelIndex}";
             newLevel.GroundTiles = GetTilesFromMap(_groundTilemap);
+            newLevel.AllowedMoves = UnityEngine.Random.Range(15,20);    //yeah..
+            newLevel.CameraPosition = _camera.transform.position;    //level depended camera position
+            newLevel.CameraSize = _camera.orthographicSize;
 
-            //EditorStuff.SaveLevelFile(newLevel);
+            EditorStuff.SaveLevelFile(newLevel);
         }
 
-        public void ClearTilemap()
-        {
-            _groundTilemap.ClearAllTiles();
-        }
         
         public void LoadTilemap()   //editor only
         {
@@ -50,8 +50,17 @@ namespace DM
             {
                 _groundTilemap.SetTile(tile.Position, tile.Tile);
             }
-        }
 
+            _camera.transform.position = level.CameraPosition;
+            _camera.orthographicSize = level.CameraSize;
+        }
+#endif
+
+        public void ClearTilemap()
+        {
+            _groundTilemap.ClearAllTiles();
+        }
+        
         public void LoadTilemap(LevelType type, int index)
         {
             Level level = Resources.Load<Level>($"{type}s/Level {index}");

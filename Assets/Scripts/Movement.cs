@@ -44,6 +44,9 @@ namespace DM
         private void Update()
         {
             if(!_isMoving && !_uiMode && Input.touchCount > 0) GetMovementDirection();
+
+            //if(Input.GetMouseButtonDown(0)) OnLevelClearedEvent?.Invoke();
+
         }
 
         private void GetMovementDirection() //todo better way to detect swipe, works for testing
@@ -104,7 +107,7 @@ namespace DM
                     yield break;
                 }
                 OnMoveEvent?.Invoke();
-                yield return new WaitForSeconds(.1f);   // fake slam into wall delay
+                yield return new WaitForSeconds(.2f);   // fake slam into wall delay
                 _isMoving = false;
                 _animator.SetBool(_movingHash, _isMoving);
             }

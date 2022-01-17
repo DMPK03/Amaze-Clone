@@ -10,7 +10,9 @@ namespace DM
     {
         public int LevelIndex, AllowedMoves;
         public List<SavedTile> GroundTiles;        
-        public LevelType Type; 
+        public LevelType Type;
+        public Vector3 CameraPosition;
+        public float CameraSize;
     }
     
     public enum LevelType 

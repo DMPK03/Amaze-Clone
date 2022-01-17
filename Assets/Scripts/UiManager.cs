@@ -12,7 +12,7 @@ namespace DM
         public static event Action<bool> OnTgUiMode;
         public static event Action<Sprite> OnBallSelected;
 
-        [SerializeField] CameraControll _cameraControll;
+        //[SerializeField] CameraControll _cameraControll;
         [SerializeField] AudioSource _audioSource;
         [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ltTextGo, _ttTextGo;
         [SerializeField] Transform _frame;
@@ -23,10 +23,10 @@ namespace DM
         private string _toggleString;
         Char[] _challengesUnlocked, _challengesCompleted;
 
-        public bool Vibrate{get; set;}
+        public bool Vibrate;
 
         private Level _currentLevel;
-        private Camera _camera;
+        //private Camera _camera;
         private Color _darkMode = new Color(.18F,.18F,.18F,1);
         private Color _lightMode = new Color(.78f,.78f,.78f,1);
         private int _movesRemaining;
@@ -47,7 +47,7 @@ namespace DM
         }
 
         private void Start() {
-            _camera = Camera.main;
+            //_camera = Camera.main;
             _ballButtons = _ballsGO.GetComponentsInChildren<Button>(true);
             LoadToggleState();
             LoadLastBall();
@@ -65,10 +65,10 @@ namespace DM
             OnTgUiMode?.Invoke(false);
         }
 
-        public void OnDarkmodeToggle(bool darkmode)
+        /*public void OnDarkmodeToggle(bool darkmode)
         {
             _camera.backgroundColor = darkmode? _lightMode : _darkMode;
-        }
+        }*/
 
         public void RestartLevel()
         {
@@ -106,11 +106,10 @@ namespace DM
 
         private void OnNewLevelLoadedEvent(Level level)
         {
-
             _currentLevel = level;
             _limitedTrunsGO.SetActive(level.Type == LevelType.LimitedTurn);
             _timeTrialsGO.SetActive(level.Type == LevelType.TimeTrial);
-            _cameraControll.enabled = (level.Type == LevelType.Challenge);
+            //_cameraControll.enabled = (level.Type == LevelType.Challenge);
             RefreshUiTexts(level);
         }
 
@@ -131,7 +130,7 @@ namespace DM
 
         private void OnMoveEvent()
         {
-            if(Vibrate) Handheld.Vibrate(); // placeholder untill custom vibrate
+            if(_toggles[1].isOn) Handheld.Vibrate(); // placeholder untill custom vibrate
             if(_currentLevel.Type == LevelType.LimitedTurn)
             {
                 _movesRemaining --;
@@ -148,7 +147,7 @@ namespace DM
             _challengesUnlocked =  SaveLoad.Instance.LoadData("Unlocked").ToCharArray();
             _challengesCompleted = SaveLoad.Instance.LoadData("Completed").ToCharArray();
 
-            for (int i = 0; i < _ballButtons.Length - 1; i++) 
+            for (int i = 0; i < _ballButtons.Length; i++) 
             {
                 if(_challengesUnlocked[i] == 't')
                 {
