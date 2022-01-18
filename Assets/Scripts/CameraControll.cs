@@ -8,7 +8,7 @@ namespace DM
         [SerializeField] private TrailRenderer _trailRenderer;
 
         private Color _darkMode = new Color(.18F,.18F,.18F,1);
-        private Color _lightMode = new Color(.78f,.78f,.78f,1);
+        private Color _lightMode = new Color(1,1,1,1);
 
         private Vector3 _offset = new Vector3(0, 0, -10);
         private Vector3 _velocity = Vector3.zero;

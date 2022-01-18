@@ -135,6 +135,7 @@ namespace DM
         {
             _movesRemaining = level.AllowedMoves;
             _timeText.text = "20";  //set time for now, should get it from level 
+            //_levelText.text = $"{level.Type.ToString().ToUpper()} {level.LevelIndex}";
             _levelText.text = level.name.ToUpper();
             _movesText.text = _movesRemaining.ToString();
         }
