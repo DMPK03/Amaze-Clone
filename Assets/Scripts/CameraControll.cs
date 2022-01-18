@@ -9,10 +9,11 @@ namespace DM
 
         private Color _darkMode = new Color(.18F,.18F,.18F,1);
         private Color _lightMode = new Color(.78f,.78f,.78f,1);
+        [SerializeField] private TrailRenderer _trailRenderer;
 
-        private Camera _camera;
-        private Vector3 _velocity = Vector3.zero;
         private Vector3 _offset = new Vector3(0, 0, -10);
+        private Vector3 _velocity = Vector3.zero;
+        private Camera _camera;
         private bool _isMovable;
 
         private void Awake() {
@@ -40,18 +41,11 @@ namespace DM
 
         private IEnumerator PositionCamera(Level level)
         {
-            Vector3 targetPosition = level.Type == LevelType.Challenge? _player.position + _offset : level.CameraPosition;
-            
-            
-            float f = 0;
-            while (f < .2f)
-            {
-                f += .01f; 
-                _camera.orthographicSize = Mathf.Lerp(_camera.orthographicSize, level.CameraSize, f/.2f);
-                _camera.transform.position = Vector3.Lerp(_camera.transform.position, targetPosition, f/.2f);
-                yield return new WaitForSeconds(.01f);
-            }
+            _camera.orthographicSize = level.CameraSize;
 
+            transform.position = level.Type == LevelType.Challenge? _player.position + _offset : level.CameraPosition;
+
+            yield return new WaitForSeconds(.45f);  //wait for the grid animation
            _isMovable = level.Type == LevelType.Challenge;
         }
 

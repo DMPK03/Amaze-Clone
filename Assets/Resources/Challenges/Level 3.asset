@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level 3
   m_EditorClassIdentifier: 
   LevelIndex: 3
-  AllowedMoves: 18
+  AllowedMoves: 15
   GroundTiles:
   - Position: {x: -7, y: -7, z: 0}
     Tile: {fileID: 11400000, guid: ce05d1727ff185b4f8b7c0021d940e15, type: 2}
@@ -210,8 +210,6 @@ MonoBehaviour:
   - Position: {x: -6, y: 4, z: 0}
     Tile: {fileID: 11400000, guid: ce05d1727ff185b4f8b7c0021d940e15, type: 2}
   - Position: {x: -5, y: 4, z: 0}
-    Tile: {fileID: 11400000, guid: ce05d1727ff185b4f8b7c0021d940e15, type: 2}
-  - Position: {x: -7, y: 5, z: 0}
     Tile: {fileID: 11400000, guid: ce05d1727ff185b4f8b7c0021d940e15, type: 2}
   Type: 1
   CameraPosition: {x: -0.5, y: 0, z: -10}

@@ -9,22 +9,24 @@ namespace DM
     {
         public static GameManager Instance;
 
-        [SerializeField] LevelManager _levelManager;
-        [SerializeField] UiManager _uiManager;
-
-        [SerializeField] SpriteRenderer _ballSprite;
-        [SerializeField] TrailRenderer _trailRenderer;
+        [SerializeField] private LevelManager _levelManager;
+        [SerializeField] private UiManager _uiManager;
+        
+        [SerializeField] private Animation _gridAnimation;
 
         private Level _levelLoaded;
 
-        private void Awake() {
-            Movement.OnLevelClearedEvent += OnLevelCleared;
+        private void OnEnable() {
             LevelManager.OnLevelLoadedEvent += OnLevelLoaded;
-            UiManager.OnBallSelected += OnNewBall;
+            Movement.OnLevelClearedEvent += OnLevelCleared;
+        }
+
+        private void OnDisable() {
+            LevelManager.OnLevelLoadedEvent += OnLevelLoaded;
+            Movement.OnLevelClearedEvent += OnLevelCleared;
         }
         
-        void Start()
-        {
+        void Start() {
             Instance = this;
             LoadNewLevel(LevelType.Level);
         }
@@ -32,23 +34,27 @@ namespace DM
         public void LoadNewLevel(LevelType type)
         {
             SaveData loadedData = SaveLoad.Instance.LoadData(type);
+            StartCoroutine(_uiManager.Fade());
 
             _levelManager.LoadTilemap(loadedData.LevelType, loadedData.LevelIndex);
         }
 
         public void LoadNewLevel(LevelType type, int index)
         {
+            StartCoroutine(_uiManager.Fade());
             _levelManager.LoadTilemap(type,index);
         }
 
         public void RestartLevel()
         {
+            StartCoroutine(_uiManager.Fade());
             _levelManager.LoadTilemap(_levelLoaded.Type, _levelLoaded.LevelIndex);
         }
 
         private void LoadNextLevel()
         {
             _levelManager.LoadTilemap(_levelLoaded.Type, _levelLoaded.LevelIndex +1);
+            _gridAnimation.Play();
         }
 
         private void OnLevelCleared()
@@ -61,14 +67,7 @@ namespace DM
         private void OnLevelLoaded(Level level)
         {
             _levelLoaded = level;
-
-            _trailRenderer.Clear();
             SaveLoad.Instance.SaveData(level);
-        }
-
-        private void OnNewBall(Sprite ballSprite)
-        {
-            _ballSprite.sprite = ballSprite;
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -8,9 +7,9 @@ namespace DM
 {
     public class Level : ScriptableObject
     {
-        public int LevelIndex, AllowedMoves;
         public List<SavedTile> GroundTiles;        
         public LevelType Type;
+        public int LevelIndex, AllowedMoves;
         public Vector3 CameraPosition;
         public float CameraSize;
     }
@@ -30,10 +29,4 @@ namespace DM
         public Tile Tile;
     }
 
-    [Serializable]
-    public class Colors
-    {
-        public Color BallColor;
-        public Color TileColor;
-    }
 }

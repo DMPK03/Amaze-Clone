@@ -9,23 +9,19 @@ namespace DM
 
     public class Movement : MonoBehaviour
     {
-
         public static event Action OnLevelClearedEvent, OnMoveEvent;
-        public static event Action<Vector3> OnMoveStartedEvent;
         
-        [SerializeField] Tilemap _groundTilemap;
-        [SerializeField] Tile _originalTile, _coloredTile;
-        [SerializeField] LevelManager _levelManager;
-        [SerializeField] ParticleSystem _particle;
-        [SerializeField] Animation _gridAnimation;
-        Animator _animator;
+        [SerializeField] private Tilemap _groundTilemap;
+        [SerializeField] private Tile _originalTile, _coloredTile;
+        [SerializeField] private ParticleSystem _particle;
         
-        float _moveSpeed = 20f;
-        int _tilesToMove = 1;
-        bool _isMoving, _uiMode, _vibrate;
+        private Animator _animator;
+        private float _moveSpeed = 20f;
+        private int _tilesToMove = 1;
+        private bool _isMoving, _uiMode;
+        private int _movingHash, _directionHash;
 
-        int _movingHash, _directionHash;
-
+#region monobehaviour
         private void Start() {
             _animator = GetComponent<Animator>();
             _movingHash = Animator.StringToHash("moving");
@@ -39,16 +35,15 @@ namespace DM
 
         private void OnDisable() {
             LevelManager.OnLevelLoadedEvent -= OnNewLevelLoadedEvent;
+            UiManager.OnTgUiMode -= OnUIMode;
         }
 
         private void Update()
         {
             if(!_isMoving && !_uiMode && Input.touchCount > 0) GetMovementDirection();
-
-            //if(Input.GetMouseButtonDown(0)) OnLevelClearedEvent?.Invoke();
-
         }
-
+#endregion
+#region Movement
         private void GetMovementDirection() //todo better way to detect swipe, works for testing
         {
             Vector2 touch = Input.GetTouch(0).deltaPosition;
@@ -88,7 +83,6 @@ namespace DM
             {
                 _isMoving = true;
                 _tilesToMove = 1;
-                OnMoveStartedEvent?.Invoke(transform.position);
 
                 Vector3 newPosition = GetPosition(inputDirection);
                 StartAnimationsAndParticles(direction);
@@ -103,16 +97,16 @@ namespace DM
 
                 if (!_groundTilemap.ContainsTile(_originalTile))
                 {
-                    OnLevelClearedEvent?.Invoke();  
+                    OnLevelClearedEvent?.Invoke(); 
                     yield break;
                 }
                 OnMoveEvent?.Invoke();
-                yield return new WaitForSeconds(.2f);   // fake slam into wall delay
+                yield return new WaitForSeconds(.13f);   // fake slam into wall delay
                 _isMoving = false;
                 _animator.SetBool(_movingHash, _isMoving);
             }
         }
-
+        
         private void StartAnimationsAndParticles(float direction)
         {
             _animator.SetBool(_movingHash, _isMoving);
@@ -120,11 +114,19 @@ namespace DM
             _particle.emission.SetBurst(0, new ParticleSystem.Burst(0, 25, 25, _tilesToMove + 2, .04f));
             _particle.Play();
         }
+#endregion
+#region setup
+        private void OnNewLevelLoadedEvent(Level level)
+        {
+
+            _isMoving = true;
+            StartCoroutine(SetupLevel(level));
+        }
 
         private IEnumerator SetupLevel(Level level)
         {
-            yield return new WaitWhile(()=>_gridAnimation.isPlaying);
-            
+            //yield return new WaitWhile(()=>_gridAnimation.isPlaying);
+            yield return new WaitForSeconds(.45f);
             Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             transform.position = newPos;
 
@@ -132,16 +134,13 @@ namespace DM
             _isMoving = false;
             _animator.SetBool(_movingHash, _isMoving);
         }
-        private void OnNewLevelLoadedEvent(Level level)
-        {
-            _gridAnimation.Play();
-            StartCoroutine(SetupLevel(level));
-        }
+
+        
 
         private void OnUIMode(bool value)
         {
             _uiMode = value;
         }
-        
+#endregion        
     }
 }

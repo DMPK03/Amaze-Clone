@@ -13,7 +13,7 @@ namespace DM
         
         [SerializeField] private Tilemap _groundTilemap;
         [SerializeField] Tile _coloredTile;
-        [SerializeField] Colors[] ColorArray;
+        [SerializeField] Color[] _colors;
 
         [SerializeField] Camera _camera;    //used in editor for saving/loading maps
         [SerializeField] private int _levelIndex;   //used in editor for saving/loading maps
@@ -93,8 +93,7 @@ namespace DM
 
         public void GetRandomColors()
         {
-            int x = UnityEngine.Random.Range(0, ColorArray.Length);
-            if(ColorArray[x] != null) _coloredTile.color = ColorArray[x].TileColor;
+            _coloredTile.color = _colors[UnityEngine.Random.Range(0, _colors.Length)];
         }
     }
 

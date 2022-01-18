@@ -12,42 +12,38 @@ namespace DM
         public static event Action<bool> OnTgUiMode;
         public static event Action<Sprite> OnBallSelected;
 
-        //[SerializeField] CameraControll _cameraControll;
-        [SerializeField] AudioSource _audioSource;
-        [SerializeField] GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ltTextGo, _ttTextGo;
-        [SerializeField] Transform _frame;
-        [SerializeField] TextMeshProUGUI _levelText, _movesText, _timeText;
-        [SerializeField] ParticleSystem _particle;
-
-        [SerializeField] Toggle[] _toggles;
-        private string _toggleString;
-        Char[] _challengesUnlocked, _challengesCompleted;
+        [SerializeField] private GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ltTextGo, _ttTextGo;
+        [SerializeField] private TextMeshProUGUI _levelText, _movesText, _timeText;
+        [SerializeField] private SpriteRenderer _ballSprite;
+        [SerializeField] private AudioSource _audioSource;
+        [SerializeField] private ParticleSystem _particle;
+        [SerializeField] private Transform _frame;
+        [SerializeField] private Toggle[] _toggles;
+        [SerializeField] private Image _fader;
 
         public bool Vibrate;
-
-        private Level _currentLevel;
-        //private Camera _camera;
-        private Color _darkMode = new Color(.18F,.18F,.18F,1);
-        private Color _lightMode = new Color(.78f,.78f,.78f,1);
-        private int _movesRemaining;
+        
+        private Char[] _challengesUnlocked, _challengesCompleted;
+        private string _toggleString;
         private Coroutine _timerCorutine = null;
         private Button[] _ballButtons;
+        private Level _currentLevel;
+        private int _movesRemaining;
 
 #region monobehaviour
-        private void Awake() {
-            Movement.OnMoveEvent += OnMoveEvent;
-            Movement.OnLevelClearedEvent += OnLevelCleared;
+        private void OnEnable() {
             LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
+            Movement.OnLevelClearedEvent += OnLevelCleared;
+            Movement.OnMoveEvent += OnMoveEvent;
         }
 
         private void OnDestroy() {
-            Movement.OnMoveEvent -= OnMoveEvent;
-            Movement.OnLevelClearedEvent -= OnLevelCleared;
             LevelManager.OnLevelLoadedEvent -= OnNewLevelLoadedEvent;
+            Movement.OnLevelClearedEvent -= OnLevelCleared;
+            Movement.OnMoveEvent -= OnMoveEvent;
         }
 
         private void Start() {
-            //_camera = Camera.main;
             _ballButtons = _ballsGO.GetComponentsInChildren<Button>(true);
             LoadToggleState();
             LoadLastBall();
@@ -55,25 +51,12 @@ namespace DM
         }
 #endregion
 #region public ui methods
-        public void OpenUiElement()
-        {
+        public void OpenUiElement() {
             OnTgUiMode?.Invoke(true);
         }
 
-        public void CloseUiElement()
-        {
+        public void CloseUiElement() {
             OnTgUiMode?.Invoke(false);
-        }
-
-        /*public void OnDarkmodeToggle(bool darkmode)
-        {
-            _camera.backgroundColor = darkmode? _lightMode : _darkMode;
-        }*/
-
-        public void RestartLevel()
-        {
-            GameManager.Instance.RestartLevel();
-            GameOver(false);
         }
 
         public void ChangeBall(int i)   //find a better way to do this
@@ -81,7 +64,7 @@ namespace DM
             if(_challengesCompleted[i] == 't')
             {
                 Image image = _ballButtons[i].image;
-                OnBallSelected?.Invoke(image.sprite);
+                _ballSprite.sprite = image.sprite;
                 _frame.position = image.transform.position;
                 PlayerPrefs.SetString("ball", image.gameObject.name);
             }
@@ -91,7 +74,6 @@ namespace DM
                 _ballsGO.SetActive(false);
                 CloseUiElement();
             }
-
         }
 
         public void ChangeGameMode(int type)
@@ -102,18 +84,17 @@ namespace DM
         }
 
 #endregion
-#region event methods
+#region public
 
         private void OnNewLevelLoadedEvent(Level level)
         {
             _currentLevel = level;
             _limitedTrunsGO.SetActive(level.Type == LevelType.LimitedTurn);
             _timeTrialsGO.SetActive(level.Type == LevelType.TimeTrial);
-            //_cameraControll.enabled = (level.Type == LevelType.Challenge);
             RefreshUiTexts(level);
         }
 
-        private void OnLevelCleared()
+        public void OnLevelCleared()
         {
             _particle.Play();
             if(_timerCorutine != null) StopCoroutine(_timerCorutine);
@@ -128,9 +109,15 @@ namespace DM
             _movesText.text = _movesRemaining.ToString();
         }
 
+        private void RestartLevel()
+        {
+            GameManager.Instance.RestartLevel();
+            GameOver(false);
+        }
+
         private void OnMoveEvent()
         {
-            if(_toggles[1].isOn) Handheld.Vibrate(); // placeholder untill custom vibrate
+            if(!_toggles[1].isOn) Handheld.Vibrate(); // placeholder untill custom vibrate
             if(_currentLevel.Type == LevelType.LimitedTurn)
             {
                 _movesRemaining --;
@@ -147,7 +134,7 @@ namespace DM
             _challengesUnlocked =  SaveLoad.Instance.LoadData("Unlocked").ToCharArray();
             _challengesCompleted = SaveLoad.Instance.LoadData("Completed").ToCharArray();
 
-            for (int i = 0; i < _ballButtons.Length; i++) 
+            for (int i = 0; i < _ballButtons.Length - 1; i++) 
             {
                 if(_challengesUnlocked[i] == 't')
                 {
@@ -228,6 +215,23 @@ namespace DM
             _audioSource.Play();
             GameOver(true);
             _timerCorutine = null;
+        }
+
+        public IEnumerator Fade()
+        {
+            for (float i = .5f; i <= 1; i += Time.deltaTime)
+            {
+                _fader.color = new Color(.27f, .27f, .27f, i);
+                yield return null;
+            }
+            
+            yield return new WaitForSeconds(.5f);
+
+            for (float i = 1; i >= 0; i -= Time.deltaTime)
+            {
+                _fader.color = new Color(.27f, .27f, .27f, i);
+                yield return null;
+            }
         }
 
         private void GameOver(bool value)
