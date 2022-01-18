@@ -1,19 +1,18 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace DM
 {
-
-    public class Movement : MonoBehaviour
+    public class Movement : MonoBehaviour, IGameState
     {
         public static event Action OnLevelClearedEvent, OnMoveEvent;
         
-        [SerializeField] private Tilemap _groundTilemap;
         [SerializeField] private Tile _originalTile, _coloredTile;
+        [SerializeField] private Tilemap _groundTilemap;
         [SerializeField] private ParticleSystem _particle;
+        [SerializeField] private TrailRenderer _trail;
         
         private Animator _animator;
         private float _moveSpeed = 20f;
@@ -29,12 +28,10 @@ namespace DM
         }
 
         private void OnEnable() {
-            LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
             UiManager.OnTgUiMode += OnUIMode;
         }
 
         private void OnDisable() {
-            LevelManager.OnLevelLoadedEvent -= OnNewLevelLoadedEvent;
             UiManager.OnTgUiMode -= OnUIMode;
         }
 
@@ -101,9 +98,9 @@ namespace DM
                     yield break;
                 }
                 OnMoveEvent?.Invoke();
+                _animator.SetBool(_movingHash, false);
                 yield return new WaitForSeconds(.13f);   // fake slam into wall delay
                 _isMoving = false;
-                _animator.SetBool(_movingHash, _isMoving);
             }
         }
         
@@ -115,32 +112,32 @@ namespace DM
             _particle.Play();
         }
 #endregion
-#region setup
-        private void OnNewLevelLoadedEvent(Level level)
+#region IGameState
+        
+        public void PrepareLevel(Level level)
         {
-
             _isMoving = true;
-            StartCoroutine(SetupLevel(level));
-        }
-
-        private IEnumerator SetupLevel(Level level)
-        {
-            //yield return new WaitWhile(()=>_gridAnimation.isPlaying);
-            yield return new WaitForSeconds(.45f);
-            Vector3 newPos = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
-            transform.position = newPos;
-
+            _animator.SetBool(_movingHash, false);
+            transform.position = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);
+        }
+        
+        public void StartLevel(Level level)
+        {
             _isMoving = false;
+            _uiMode = false;
             _animator.SetBool(_movingHash, _isMoving);
         }
 
-        
+        public void ClearLevel()
+        {
+            _uiMode = true;
+        }
+#endregion
 
         private void OnUIMode(bool value)
         {
             _uiMode = value;
-        }
-#endregion        
+        }       
     }
 }

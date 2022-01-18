@@ -15,12 +15,12 @@ namespace DM
         [SerializeField] Tile _coloredTile;
         [SerializeField] Color[] _colors;
 
-        [SerializeField] Camera _camera;    //used in editor for saving/loading maps
-        [SerializeField] private int _levelIndex;   //used in editor for saving/loading maps
-        [SerializeField] LevelType _levelType;    //used in editor for saving/loading maps
-        
 #if UNITY_EDITOR
-        public void SaveTilemap()   //editor only
+        [SerializeField] Camera _camera;
+        [SerializeField] private int _levelIndex;
+        [SerializeField] LevelType _levelType;
+        
+        public void SaveTilemap()
         {
             var newLevel = ScriptableObject.CreateInstance<Level>();
             newLevel.LevelIndex = _levelIndex;
@@ -33,9 +33,8 @@ namespace DM
 
             EditorStuff.SaveLevelFile(newLevel);
         }
-
-        
-        public void LoadTilemap()   //editor only
+    
+        public void LoadTilemap()
         {
             Level level = Resources.Load<Level>($"{_levelType}s/Level {_levelIndex}");
             if(level == null){
@@ -64,6 +63,7 @@ namespace DM
         public void LoadTilemap(LevelType type, int index)
         {
             Level level = Resources.Load<Level>($"{type}s/Level {index}");
+            if(level == null) level = Resources.Load<Level>($"{type}s/Level {index-1}");
             if(level == null) level = Resources.Load<Level>($"{type}s/Level {1}");
 
             ClearTilemap();

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
@@ -8,7 +6,6 @@ namespace DM
     public class SaveLoad : MonoBehaviour
     {
         public static SaveLoad Instance;
-        private float time;
 
         private void Awake() {
             Instance = this;
@@ -48,9 +45,7 @@ namespace DM
             {
                 return  File.ReadAllText(path);
             }
-            else return "tfffffffffffffffffff";
+            else return "tfffffffffffffffffffffffffffffffffffffffffff";
         }
-
-
     }
 }

@@ -7,17 +7,19 @@ using TMPro;
 namespace DM
 {
     
-    public class UiManager : MonoBehaviour
+    public class UiManager : MonoBehaviour, IGameState
     {
         public static event Action<bool> OnTgUiMode;
         public static event Action<Sprite> OnBallSelected;
 
-        [SerializeField] private GameObject _ballsGO, _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ltTextGo, _ttTextGo;
-        [SerializeField] private TextMeshProUGUI _levelText, _movesText, _timeText;
+        
+        [SerializeField] private GameObject _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ballsGO, _ltTextGo, _ttTextGo;        
+        [Space(10)][SerializeField] private TextMeshProUGUI _levelText;
+        [SerializeField] private TextMeshProUGUI _movesText, _timeText;
+        [Space(10)][SerializeField] private Transform _frame;
         [SerializeField] private SpriteRenderer _ballSprite;
         [SerializeField] private AudioSource _audioSource;
         [SerializeField] private ParticleSystem _particle;
-        [SerializeField] private Transform _frame;
         [SerializeField] private Toggle[] _toggles;
         [SerializeField] private Image _fader;
 
@@ -30,16 +32,12 @@ namespace DM
         private Level _currentLevel;
         private int _movesRemaining;
 
-#region monobehaviour
+#region mono
         private void OnEnable() {
-            LevelManager.OnLevelLoadedEvent += OnNewLevelLoadedEvent;
-            Movement.OnLevelClearedEvent += OnLevelCleared;
             Movement.OnMoveEvent += OnMoveEvent;
         }
 
         private void OnDestroy() {
-            LevelManager.OnLevelLoadedEvent -= OnNewLevelLoadedEvent;
-            Movement.OnLevelClearedEvent -= OnLevelCleared;
             Movement.OnMoveEvent -= OnMoveEvent;
         }
 
@@ -50,15 +48,8 @@ namespace DM
             LoadChallenges();
         }
 #endregion
-#region public ui methods
-        public void OpenUiElement() {
-            OnTgUiMode?.Invoke(true);
-        }
-
-        public void CloseUiElement() {
-            OnTgUiMode?.Invoke(false);
-        }
-
+#region public ui
+        
         public void ChangeBall(int i)   //find a better way to do this
         {
             if(_challengesCompleted[i] == 't')
@@ -70,7 +61,7 @@ namespace DM
             }
             else
             {
-                GameManager.Instance.LoadNewLevel(LevelType.Challenge, i);
+                GameManager.Instance.LoadChallenge(LevelType.Challenge, i);
                 _ballsGO.SetActive(false);
                 CloseUiElement();
             }
@@ -84,9 +75,8 @@ namespace DM
         }
 
 #endregion
-#region public
-
-        private void OnNewLevelLoadedEvent(Level level)
+#region IGameState
+        public void PrepareLevel(Level level)
         {
             _currentLevel = level;
             _limitedTrunsGO.SetActive(level.Type == LevelType.LimitedTurn);
@@ -94,62 +84,24 @@ namespace DM
             RefreshUiTexts(level);
         }
 
-        public void OnLevelCleared()
+        public void StartLevel(Level level)
+        {
+            if(_timerCorutine != null) StopCoroutine(_timerCorutine);
+            _timerCorutine = null;
+        }
+
+        public void ClearLevel()
         {
             _particle.Play();
             if(_timerCorutine != null) StopCoroutine(_timerCorutine);
             _timerCorutine = null;
         }
-
-        private void RefreshUiTexts(Level level)
-        {
-            _movesRemaining = level.AllowedMoves;
-            _timeText.text = "20";  //set time for now, should get it from level 
-            _levelText.text = level.name.ToUpper();
-            _movesText.text = _movesRemaining.ToString();
-        }
-
-        private void RestartLevel()
+#endregion
+#region public
+        public void RestartLevel()
         {
             GameManager.Instance.RestartLevel();
             GameOver(false);
-        }
-
-        private void OnMoveEvent()
-        {
-            if(!_toggles[1].isOn) Handheld.Vibrate(); // placeholder untill custom vibrate
-            if(_currentLevel.Type == LevelType.LimitedTurn)
-            {
-                _movesRemaining --;
-                _movesText.text = _movesRemaining.ToString();
-                if(_movesRemaining == 0) GameOver(true);
-            }
-            if(_currentLevel.Type == LevelType.TimeTrial && _timerCorutine == null) _timerCorutine = StartCoroutine(Timer(20));
-        }
-#endregion
-#region private methods
-
-        private void LoadChallenges()
-        {
-            _challengesUnlocked =  SaveLoad.Instance.LoadData("Unlocked").ToCharArray();
-            _challengesCompleted = SaveLoad.Instance.LoadData("Completed").ToCharArray();
-
-            for (int i = 0; i < _ballButtons.Length - 1; i++) 
-            {
-                if(_challengesUnlocked[i] == 't')
-                {
-                    _ballButtons[i].interactable = true;
-                    SetTexts(i, (_challengesCompleted[i] == 't')? "" : "PLAY CHALLENGE");
-                }
-                else _ballButtons[i].interactable = false;
-                _ballButtons[0].interactable = true;
-            }
-        }
-        
-        private void SetTexts(int i, string msg)
-        {
-            var text = _ballButtons[i].gameObject.GetComponentInChildren<TextMeshProUGUI>(true);
-            if(text != null) text.text = msg;
         }
 
         public void UpdateChallenges(Level level)
@@ -169,35 +121,48 @@ namespace DM
             }            
         }
 
-        private void SaveGame()
+        public void OpenUiElement() {   // get rid of this
+            OnTgUiMode?.Invoke(true);
+        }
+
+        public void CloseUiElement() {
+            OnTgUiMode?.Invoke(false);
+        }
+        
+#endregion
+#region private
+        private void RefreshUiTexts(Level level)
         {
-            SaveLoad.Instance.SaveData("Unlocked", new string(_challengesUnlocked));
-            SaveLoad.Instance.SaveData("Completed", new string(_challengesCompleted));
+            _movesRemaining = level.AllowedMoves;
+            _timeText.text = "20";  //set time for now, should get it from level 
+            _levelText.text = level.name.ToUpper();
+            _movesText.text = _movesRemaining.ToString();
         }
 
-        private void OnApplicationQuit() {
-            SaveGame();
-        }
-
-        private void OnApplicationFocus(bool focusStatus) {
-            if(!focusStatus) SaveGame();
-        }
-
-        private void LoadLastBall()
+        private void OnMoveEvent()
         {
-            if(PlayerPrefs.HasKey("ball"))
+            if(!_toggles[1].isOn) Handheld.Vibrate(); // placeholder untill custom vibrate
+            if(_currentLevel.Type == LevelType.LimitedTurn)
             {
-                string ball = PlayerPrefs.GetString("ball");
-                foreach (var button in _ballButtons)
-                {
-                    if(button.name == ball)
-                    {
-                        OnBallSelected?.Invoke(button.image.sprite);
-                        _frame.position = button.transform.position;
-                        break;
-                    }
-                }
-            }    
+                _movesRemaining --;
+                _movesText.text = _movesRemaining.ToString();
+                if(_movesRemaining == 0) GameOver(true);
+            }
+            if(_currentLevel.Type == LevelType.TimeTrial && _timerCorutine == null) _timerCorutine = StartCoroutine(Timer(20));
+        }
+           
+        private void SetTexts(int i, string msg)
+        {
+            var text = _ballButtons[i].gameObject.GetComponentInChildren<TextMeshProUGUI>(true);
+            if(text != null) text.text = msg;
+        }
+
+        private void GameOver(bool value)
+        {
+            _gameOverGO.SetActive(value);
+            OnTgUiMode?.Invoke(value);
+            _ltTextGo.SetActive(_currentLevel.Type == LevelType.LimitedTurn);
+            _ttTextGo.SetActive(_currentLevel.Type == LevelType.TimeTrial);
         }
 
         private IEnumerator Timer(float duration)
@@ -216,35 +181,39 @@ namespace DM
             GameOver(true);
             _timerCorutine = null;
         }
-
-        public IEnumerator Fade()
-        {
-            for (float i = .5f; i <= 1; i += Time.deltaTime)
-            {
-                _fader.color = new Color(.27f, .27f, .27f, i);
-                yield return null;
-            }
-            
-            yield return new WaitForSeconds(.5f);
-
-            for (float i = 1; i >= 0; i -= Time.deltaTime)
-            {
-                _fader.color = new Color(.27f, .27f, .27f, i);
-                yield return null;
-            }
-        }
-
-        private void GameOver(bool value)
-        {
-            _gameOverGO.SetActive(value);
-            OnTgUiMode?.Invoke(value);
-            _ltTextGo.SetActive(_currentLevel.Type == LevelType.LimitedTurn);
-            _ttTextGo.SetActive(_currentLevel.Type == LevelType.TimeTrial);
-        }
-
 #endregion
-#region PlayerPrefs
+#region SaveLoad
+        private void LoadChallenges()
+        {
+            _challengesUnlocked =  SaveLoad.Instance.LoadData("Unlocked").ToCharArray();
+            _challengesCompleted = SaveLoad.Instance.LoadData("Completed").ToCharArray();
 
+            for (int i = 0; i < _ballButtons.Length - 1; i++) 
+            {
+                if(_challengesUnlocked[i] == 't')
+                {
+                    _ballButtons[i].interactable = true;
+                    SetTexts(i, (_challengesCompleted[i] == 't')? "" : "PLAY CHALLENGE");
+                }
+                else _ballButtons[i].interactable = false;
+                _ballButtons[0].interactable = true;
+            }
+        }
+
+        private void SaveGame()
+        {
+            SaveLoad.Instance.SaveData("Unlocked", new string(_challengesUnlocked));
+            SaveLoad.Instance.SaveData("Completed", new string(_challengesCompleted));
+        }
+
+        private void OnApplicationQuit() {
+            SaveGame();
+        }
+
+        private void OnApplicationFocus(bool focusStatus) {
+            if(!focusStatus) SaveGame();
+        }
+        
         public void SaveToggleState()
         {
             _toggleString = "";
@@ -265,6 +234,23 @@ namespace DM
                     _toggles[i].isOn = _toggleString[i] == 't';
                 }
             }
+        }
+
+        private void LoadLastBall()
+        {
+            if(PlayerPrefs.HasKey("ball"))
+            {
+                string ball = PlayerPrefs.GetString("ball");
+                foreach (var button in _ballButtons)
+                {
+                    if(button.name == ball)
+                    {
+                        OnBallSelected?.Invoke(button.image.sprite);
+                        _frame.position = button.transform.position;
+                        break;
+                    }
+                }
+            }    
         }
 
 #endregion
