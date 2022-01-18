@@ -5,4 +5,4 @@ Mechanics, particles, animation, json, scriptables, playerprefs etc.
 
 build available at:
 
-https://drive.google.com/file/d/1fZ3XQp9gkJN5I-YCUOY0YY-YGd29qO9L/view?usp=sharing
+https://drive.google.com/file/d/1jcScoXF6WydGsa5nzN2OtgGmEGM63fv2/view?usp=sharing
