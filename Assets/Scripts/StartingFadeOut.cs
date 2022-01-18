@@ -10,6 +10,7 @@ public class StartingFadeOut : MonoBehaviour
 
     void Start()
     {
+        _fader.color = new Color(.27f, .27f, .27f, 1);
         StartCoroutine(Fader());
     }
 
