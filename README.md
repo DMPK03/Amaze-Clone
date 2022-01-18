@@ -1,2 +1,6 @@
 # Amaze Clone
- Recreating Amaze
+Learning purpose only
+
+Mechanics, particles, animation, json, scriptables, playerprefs etc.
+
+
