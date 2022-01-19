@@ -127,10 +127,12 @@ namespace DM
             _isMoving = false;
             _uiMode = false;
             _animator.SetBool(_movingHash, _isMoving);
+            _trail.emitting = true;
         }
 
         public void ClearLevel()
         {
+            _trail.emitting = false;
             _uiMode = true;
         }
 #endregion

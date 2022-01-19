@@ -113,11 +113,13 @@ namespace DM
             }
             else
             {
-                for (float i = .7f; i <= 1; i += Time.deltaTime)
+                /*for (float i = .7f; i <= 1; i += Time.deltaTime)
                 {
                     _fader.color = new Color(.27f, .27f, .27f, i);
                     yield return null;
-                }
+                }*/
+
+                _fader.color = new Color(.27f, .27f, .27f, 1);  //instant black to hide transition
 
                 PrepareLevel(level);
                 yield return new WaitForSeconds(.5f);
