@@ -10,8 +10,6 @@ namespace DM
     public class UiManager : MonoBehaviour, IGameState
     {
         public static event Action<bool> OnTgUiMode;
-        public static event Action<Sprite> OnBallSelected;
-
         
         [SerializeField] private GameObject _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ballsGO, _ltTextGo, _ttTextGo;        
         [Space(10)][SerializeField] private TextMeshProUGUI _levelText;
@@ -246,7 +244,7 @@ namespace DM
                 {
                     if(button.name == ball)
                     {
-                        OnBallSelected?.Invoke(button.image.sprite);
+                        _ballSprite.sprite = button.image.sprite;
                         _frame.position = button.transform.position;
                         break;
                     }
