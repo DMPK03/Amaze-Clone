@@ -587,16 +587,16 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: OpenUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
       - m_Target: {fileID: 654003234}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
@@ -2711,7 +2711,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -30, y: -30}
+  m_AnchoredPosition: {x: -30, y: -29.999985}
   m_SizeDelta: {x: 120, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &342504924
@@ -2759,9 +2759,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: CloseUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -5082,7 +5082,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &552729571
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6118,9 +6118,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: OpenUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -7551,6 +7551,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 527055837}
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &934388526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8383,9 +8395,9 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: CloseUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -11774,9 +11786,9 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: CloseUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -12861,9 +12873,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: CloseUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -13041,9 +13053,9 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: CloseUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -16049,16 +16061,16 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: OpenUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
       - m_Target: {fileID: 2484328029146599002}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
@@ -16494,9 +16506,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: CloseUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -16849,16 +16861,16 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 527055837}
-        m_TargetAssemblyTypeName: DM.UI, Assembly-CSharp
-        m_MethodName: OpenUiElement
-        m_Mode: 1
+        m_TargetAssemblyTypeName: DM.UiManager, Assembly-CSharp
+        m_MethodName: UiMode
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
       - m_Target: {fileID: 1964438646}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine

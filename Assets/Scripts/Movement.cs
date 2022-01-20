@@ -91,7 +91,7 @@ namespace DM
                     _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);
                     yield return null;
                 }
-
+                
                 if (!_groundTilemap.ContainsTile(_originalTile))
                 {
                     OnLevelClearedEvent?.Invoke(); 
@@ -111,6 +111,8 @@ namespace DM
             _particle.emission.SetBurst(0, new ParticleSystem.Burst(0, 25, 25, _tilesToMove + 2, .04f));
             _particle.Play();
         }
+
+        private void OnUIMode(bool value) {_uiMode = value;}
 #endregion
 #region IGameState
         
@@ -135,11 +137,6 @@ namespace DM
             _trail.emitting = false;
             _uiMode = true;
         }
-#endregion
-
-        private void OnUIMode(bool value)
-        {
-            _uiMode = value;
-        }       
+#endregion               
     }
 }
