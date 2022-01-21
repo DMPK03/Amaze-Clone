@@ -61,14 +61,14 @@ namespace DM
             {
                 GameManager.Instance.LoadChallenge(LevelType.Challenge, i);
                 _ballsGO.SetActive(false);
-                CloseUiElement();
+                UiMode(false);
             }
         }
 
         public void ChangeGameMode(int type)
         {
             if(_currentLevel.Type != (LevelType)type) GameManager.Instance.LoadNewLevel((LevelType)type);
-            CloseUiElement();
+            UiMode(false);
             if(_timerCorutine != null) StopCoroutine(_timerCorutine); //in case level is changed while timer is runing
         }
 
@@ -118,14 +118,8 @@ namespace DM
                 ChangeBall(level.LevelIndex);
             }            
         }
-
-        public void OpenUiElement() {   // get rid of this
-            OnTgUiMode?.Invoke(true);
-        }
-
-        public void CloseUiElement() {
-            OnTgUiMode?.Invoke(false);
-        }
+            
+        public void UiMode(bool uiMode) {OnTgUiMode?.Invoke(uiMode);}
         
 #endregion
 #region private
