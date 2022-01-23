@@ -11,7 +11,7 @@ namespace DM
         
         [SerializeField] private Tile _originalTile, _coloredTile;
         [SerializeField] private Tilemap _groundTilemap;
-        [SerializeField] private ParticleSystem _particle;
+        [SerializeField] private ParticleSystem _hitParticle, _trailParticle;
         [SerializeField] private TrailRenderer _trail;
         
         private Animator _animator;
@@ -82,7 +82,8 @@ namespace DM
                 _tilesToMove = 1;
 
                 Vector3 newPosition = GetPosition(inputDirection);
-                StartAnimationsAndParticles(direction);
+                _animator.SetBool(_movingHash, _isMoving);
+                _animator.SetFloat(_directionHash, direction);
 
                 while (transform.position != newPosition)
                 {
@@ -97,19 +98,14 @@ namespace DM
                     OnLevelClearedEvent?.Invoke(); 
                     yield break;
                 }
+
                 OnMoveEvent?.Invoke();
+                _hitParticle.Play();
                 _animator.SetBool(_movingHash, false);
+                
                 yield return new WaitForSeconds(.13f);   // fake slam into wall delay
                 _isMoving = false;
             }
-        }
-        
-        private void StartAnimationsAndParticles(float direction)
-        {
-            _animator.SetBool(_movingHash, _isMoving);
-            _animator.SetFloat(_directionHash, direction);
-            _particle.emission.SetBurst(0, new ParticleSystem.Burst(0, 25, 25, _tilesToMove + 2, .04f));
-            _particle.Play();
         }
 
         private void OnUIMode(bool value) {_uiMode = value;}
@@ -117,8 +113,7 @@ namespace DM
 #region IGameState
         
         public void PrepareLevel(Level level)
-        {
-            _isMoving = true;
+        {            
             _animator.SetBool(_movingHash, false);
             transform.position = new Vector3(level.GroundTiles[0].Position.x + .5f, level.GroundTiles[0].Position.y + .5f, 0);
             _groundTilemap.SetTile(_groundTilemap.WorldToCell(transform.position), _coloredTile);
@@ -127,15 +122,16 @@ namespace DM
         public void StartLevel(Level level)
         {
             _isMoving = false;
-            _uiMode = false;
             _animator.SetBool(_movingHash, _isMoving);
             _trail.emitting = true;
+            _trailParticle.Play();
         }
 
         public void ClearLevel()
         {
+            _isMoving = true;
             _trail.emitting = false;
-            _uiMode = true;
+            _trailParticle.Stop();
         }
 #endregion               
     }

@@ -63,17 +63,15 @@ namespace DM
         public void LoadNewLevel(LevelType type)    //on game start or mode change
         {
             SaveData loadedData = SaveLoad.Instance.LoadData(type);
-            _nextLevel = false;
             _levelManager.LoadTilemap(loadedData.LevelType, loadedData.LevelIndex);
         }
 
-        public void LoadChallenge(LevelType type, int index)
+        public void LoadChallenge(int index)
         {
-            _nextLevel = false;
-            _levelManager.LoadTilemap(type,index);
+            _levelManager.LoadTilemap(LevelType.Challenge,index);
         }
 
-        private void LoadNextLevel()
+        public void LoadNextLevel()
         {
             _nextLevel=true;
             _levelManager.LoadTilemap(_levelLoaded.Type, _levelLoaded.LevelIndex +1);
@@ -82,18 +80,20 @@ namespace DM
 
         public void RestartLevel()
         {
-            _nextLevel = false;
             _levelManager.LoadTilemap(_levelLoaded.Type, _levelLoaded.LevelIndex);
         }
 #endregion
 #region GameState       
         private void OnLevelCleared()
         {
-            _uiManager.UpdateChallenges(_levelLoaded);
             ClearLevel();
 
-            if(_levelLoaded.Type == LevelType.Challenge) LoadNewLevel(LevelType.Level); //todo pause, show challenge completed screen, wait for button press
-            else LoadNextLevel();
+            if (_levelLoaded.Type == LevelType.Challenge) _uiManager.CompleteChallenge(_levelLoaded.LevelIndex);
+            else 
+            {
+                if(_levelLoaded.Type == LevelType.Level && _levelLoaded.LevelIndex % 3 == 0) _uiManager.UnlockChallenge(_levelLoaded.LevelIndex / 3);
+                LoadNextLevel();
+            }
         }
 
         private void OnLevelLoaded(Level level)
@@ -113,12 +113,6 @@ namespace DM
             }
             else
             {
-                /*for (float i = .7f; i <= 1; i += Time.deltaTime)
-                {
-                    _fader.color = new Color(.27f, .27f, .27f, i);
-                    yield return null;
-                }*/
-
                 _fader.color = new Color(.27f, .27f, .27f, 1);  //instant black to hide transition
 
                 PrepareLevel(level);
@@ -132,10 +126,9 @@ namespace DM
                     cant find whats causing it, so just force it back in place */
                     yield return null;
                 } 
-
-
                 StartLevel(level);   
             }
+            _nextLevel = false;
         }
 #endregion        
     }

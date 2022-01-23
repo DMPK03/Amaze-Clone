@@ -11,17 +11,17 @@ namespace DM
     {
         public static event Action<bool> OnTgUiMode;
         
-        [SerializeField] private GameObject _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ballsGO, _ltTextGo, _ttTextGo;        
+        [SerializeField] private GameObject _limitedTrunsGO, _timeTrialsGO, _gameOverGO, _ballsGO, _ltTextGo, _ttTextGo, _unlockedGO, _completedGO;        
         [Space(10)][SerializeField] private TextMeshProUGUI _levelText;
         [SerializeField] private TextMeshProUGUI _movesText, _timeText;
+        [Space(10)][SerializeField] private SpriteRenderer _ballSprite;
+        [SerializeField] private Image _unlockedImage, _completedImage, _timerImage;
         [Space(10)][SerializeField] private Transform _frame;
-        [SerializeField] private SpriteRenderer _ballSprite;
         [SerializeField] private AudioSource _audioSource;
         [SerializeField] private ParticleSystem _particle;
         [SerializeField] private Toggle[] _toggles;
         [SerializeField] private Image _fader;
-
-        public bool Vibrate;
+        [SerializeField] private Button _btnChallenge, _btnClaim;
         
         private Char[] _challengesUnlocked, _challengesCompleted;
         private string _toggleString;
@@ -48,7 +48,7 @@ namespace DM
 #endregion
 #region public ui
         
-        public void ChangeBall(int i)   //find a better way to do this
+        public void ChangeBall(int i)
         {
             if(_challengesCompleted[i] == 't')
             {
@@ -57,12 +57,7 @@ namespace DM
                 _frame.position = image.transform.position;
                 PlayerPrefs.SetString("ball", image.gameObject.name);
             }
-            else
-            {
-                GameManager.Instance.LoadChallenge(LevelType.Challenge, i);
-                _ballsGO.SetActive(false);
-                UiMode(false);
-            }
+            else LoadChallenge(i);
         }
 
         public void ChangeGameMode(int type)
@@ -102,21 +97,28 @@ namespace DM
             GameOver(false);
         }
 
-        public void UpdateChallenges(Level level)
+        public void UnlockChallenge(int i)
         {
-            if(level.Type == LevelType.Level && level.LevelIndex % 3 == 0)
-            {
-                int i = level.LevelIndex / 3;
-                _challengesUnlocked[i] = 't';
-                _ballButtons[i].interactable = true;
-                SetTexts(i,"PLAY CHALLENGE");
-            }
-            else if(level.Type == LevelType.Challenge)
-            {
-                _challengesCompleted[level.LevelIndex] = 't';
-                SetTexts(level.LevelIndex, "");
-                ChangeBall(level.LevelIndex);
-            }            
+            _challengesUnlocked[i] = 't';
+            _ballButtons[i].interactable = true;
+            SetTexts(i,"PLAY CHALLENGE");
+            UiMode(true);
+
+            _unlockedImage.sprite = _ballButtons[i].image.sprite;
+            _btnChallenge.onClick.AddListener(()=> GameManager.Instance.LoadChallenge(i));
+            _unlockedGO.SetActive(true);
+        }
+
+        public void CompleteChallenge(int i)
+        {
+            _challengesCompleted[i] = 't';
+            SetTexts(i, "");
+            UiMode(true);
+            
+            _completedImage.sprite = _ballButtons[i].image.sprite;
+            _btnClaim.onClick.AddListener(()=> ChangeBall(i));
+            _btnClaim.onClick.AddListener(()=>GameManager.Instance.LoadNewLevel(LevelType.Level));
+            _completedGO.SetActive(true);
         }
             
         public void UiMode(bool uiMode) {OnTgUiMode?.Invoke(uiMode);}
@@ -130,11 +132,12 @@ namespace DM
             //_levelText.text = $"{level.Type.ToString().ToUpper()} {level.LevelIndex}";
             _levelText.text = level.name.ToUpper();
             _movesText.text = _movesRemaining.ToString();
+            _timerImage.fillAmount = 1;
         }
 
         private void OnMoveEvent()
         {
-            if(!_toggles[1].isOn) Handheld.Vibrate(); // placeholder untill custom vibrate
+            if(!_toggles[1].isOn) Vibration.Vibrate(40);
             if(_currentLevel.Type == LevelType.LimitedTurn)
             {
                 _movesRemaining --;
@@ -158,16 +161,25 @@ namespace DM
             _ttTextGo.SetActive(_currentLevel.Type == LevelType.TimeTrial);
         }
 
+        private void LoadChallenge(int i)
+        {
+            GameManager.Instance.LoadChallenge(i);
+            _ballsGO.SetActive(false);
+            UiMode(false);
+        }
+
         private IEnumerator Timer(float duration)
         {
             float finishedTime = Time.time + duration;
 
             while (Time.time < finishedTime)
             {
-                _timeText.text = (finishedTime - Time.time).ToString("0");
+                _timeText.text = (finishedTime - Time.time).ToString("0.00");
+                _timerImage.fillAmount = (finishedTime - Time.time) / duration;
+
                 if(finishedTime - Time.time < 4) _audioSource.Play();
 
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(.1f);
             }
             _timeText.text = (finishedTime - Time.time).ToString("0");
             _audioSource.Play();

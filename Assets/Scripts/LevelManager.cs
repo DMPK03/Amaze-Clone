@@ -19,7 +19,7 @@ namespace DM
         [SerializeField] Camera _camera;
         [SerializeField] private int _levelIndex;
         [SerializeField] LevelType _levelType;
-        
+      
         public void SaveTilemap()
         {
             var newLevel = ScriptableObject.CreateInstance<Level>();
