@@ -1,8 +1,6 @@
 # Amaze Clone
 Learning purpose only
 
-Mechanics, particles, animation, json, scriptables, playerprefs etc.
-
 set display to 18:9
 
 build available at:
