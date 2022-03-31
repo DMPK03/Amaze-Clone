@@ -1,5 +1,4 @@
 # Amaze Clone
-Learning purpose only
 
 set display to 18:9
 
